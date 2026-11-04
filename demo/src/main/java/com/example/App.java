@@ -2,6 +2,7 @@ package com.example;
 
 import static org.lwjgl.glfw.GLFW.*;
 import org.lwjgl.system.MemoryUtil;
+import org.lwjgl.opengl.GL;
 
 /**
  * Hello world!
@@ -32,10 +33,17 @@ public class App
             }
         });
 
+        // Set GL context.
+        glfwMakeContextCurrent(window);
+        // VSync ON.
+        glfwSwapInterval(1);
         glfwShowWindow(window);
+
+        GL.createCapabilities();
 
         // Loop.
         while (!glfwWindowShouldClose(window)) {
+            glfwSwapBuffers(window);
             glfwPollEvents();
         }
 
