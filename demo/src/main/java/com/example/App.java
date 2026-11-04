@@ -3,6 +3,7 @@ package com.example;
 import static org.lwjgl.glfw.GLFW.*;
 import org.lwjgl.system.MemoryUtil;
 import org.lwjgl.opengl.GL;
+import static org.lwjgl.opengl.GL11.*;
 
 /**
  * Hello world!
@@ -43,6 +44,9 @@ public class App
 
         // Loop.
         while (!glfwWindowShouldClose(window)) {
+            glClearColor(0.25f, 0.25f, 0.25f, 1);
+            glClear(GL_COLOR_BUFFER_BIT);
+
             glfwSwapBuffers(window);
             glfwPollEvents();
         }
