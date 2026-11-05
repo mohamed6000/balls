@@ -47,11 +47,13 @@ public class App
             glClearColor(0.25f, 0.25f, 0.25f, 1);
             glClear(GL_COLOR_BUFFER_BIT);
 
-            glColor4f(1,1,1,1);
             glBegin(GL_TRIANGLES);
+            glColor4f(1,0,0,1);
             glVertex2f(-0.5f, -0.5f);
-            glVertex2f(0.5f,  -0.5f);
-            glVertex2f(0,      0.5f);
+            glColor4f(0,1,0,1);
+            glVertex2f(0.5f,-0.5f);
+            glColor4f(0,0,1,1);
+            glVertex2f(0,0.5f);
             glEnd();
 
             glfwSwapBuffers(window);
