@@ -22,9 +22,29 @@ public class App
         glEnd();
     }
 
+    public static void draw_circle(float x, float y, float radius, int segments, float r, float g, float b, float a) {
+        int i;
+        float t0, t1, ct0, st0, ct1, st1;
+        glColor4f(r,g,b,a);
+        glBegin(GL_TRIANGLES);
+        for (i = 0; i < segments; i++) {
+            t0 = (float)i / segments * (float)Math.TAU;
+            t1 = (float)(i+1) / segments * (float)Math.TAU;
+            ct0 = (float)Math.cos(t0);
+            st0 = (float)Math.sin(t0);
+            ct1 = (float)Math.cos(t1);
+            st1 = (float)Math.sin(t1);
+
+            glVertex3f(x, y, 0);
+            glVertex3f(x+ct0*radius, y+st0*radius, 0);
+            glVertex3f(x+ct1*radius, y+st1*radius, 0);
+        }
+        glEnd();
+    }
+
     public static void main( String[] args )
     {
-        Window window = new Window(640, 480, "Test new framework");
+        Window window = new Window(640, 480, "Balls");
 
         GL.createCapabilities();
 
@@ -47,6 +67,8 @@ public class App
 
             draw_quad(100, 100, 200, 200, 1,1,1,1);
             draw_quad(350, 350, 360, 360, 0,0,1,1);
+
+            draw_circle(250, 250, 50, 32, 1,1,1,1);
 
             glFlush();
 
