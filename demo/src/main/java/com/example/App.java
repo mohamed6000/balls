@@ -17,6 +17,9 @@ public class App
 
         // Loop.
         while (!window.ShouldClose()) {
+            int render_target_width  = window.getWidth();
+            int render_target_height = window.getHeight();
+            glViewport(0, 0, render_target_width, render_target_height);
             glClearColor(0.25f, 0.25f, 0.25f, 1);
             glClear(GL_COLOR_BUFFER_BIT);
 
@@ -27,7 +30,7 @@ public class App
             // Orthographic Projection.
             glMatrixMode(GL_PROJECTION);
             glLoadIdentity();
-            glOrtho(0, window.getWidth(), 0, window.getHeight(), -2000, 2000);
+            glOrtho(0, render_target_width, 0, render_target_height, -2000, 2000);
 
             glColor4f(1,1,1,1);
             glBegin(GL_TRIANGLES);
