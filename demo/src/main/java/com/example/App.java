@@ -20,20 +20,24 @@ public class App
             glClearColor(0.25f, 0.25f, 0.25f, 1);
             glClear(GL_COLOR_BUFFER_BIT);
 
-            glBegin(GL_TRIANGLES);
-            glColor4f(1,0,0,1);
-            glVertex2f(-0.5f, -0.5f);
-            glColor4f(0,1,0,1);
-            glVertex2f(0.5f,-0.5f);
-            glColor4f(0,0,1,1);
-            glVertex2f(0.5f,0.5f);
+            // Switch to modelview for rendering geometry.
+            glMatrixMode(GL_MODELVIEW);
+            glLoadIdentity();
 
-            glColor4f(1,0,0,1);
-            glVertex2f(-0.5f, -0.5f);
-            glColor4f(0,0,1,1);
-            glVertex2f(0.5f,0.5f);
-            glColor4f(1,1,0,1);
-            glVertex2f(-0.5f,0.5f);
+            // Orthographic Projection.
+            glMatrixMode(GL_PROJECTION);
+            glLoadIdentity();
+            glOrtho(0, window.getWidth(), 0, window.getHeight(), -2000, 2000);
+
+            glColor4f(1,1,1,1);
+            glBegin(GL_TRIANGLES);
+            glVertex3f(100, 100, 0);
+            glVertex3f(200, 100, 0);
+            glVertex3f(200, 200, 0);
+            
+            glVertex3f(100, 100, 0);
+            glVertex3f(200, 200, 0);
+            glVertex3f(100, 200, 0);
             glEnd();
 
             window.SwapBuffers();
