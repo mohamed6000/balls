@@ -5,11 +5,15 @@ import org.lwjgl.system.MemoryUtil;
 
 public class Window {
     private long window_pointer;
+    private int width, height;
 
     public Window(int width, int height, String title) {
         if (!glfwInit()) {
             throw new IllegalStateException("Failed to glfwInit");
         }
+
+        this.width  = width;
+        this.height = height;
 
         glfwDefaultWindowHints();
         glfwWindowHint(GLFW_VISIBLE,   GLFW_FALSE);
@@ -24,6 +28,11 @@ public class Window {
             if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
                 glfwSetWindowShouldClose(window_ptr, true);
             }
+        });
+
+        glfwSetWindowSizeCallback(window_pointer, (window_ptr, x, y) -> {
+            this.width  = x;
+            this.height = y;
         });
 
         // Set GL context.
@@ -48,5 +57,13 @@ public class Window {
 
     public void SwapBuffers() {
         glfwSwapBuffers(window_pointer);
+    }
+
+    public int getWidth() {
+        return width;
+    }
+
+    public int getHeight() {
+        return height;
     }
 }
