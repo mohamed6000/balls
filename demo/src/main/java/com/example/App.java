@@ -45,8 +45,11 @@ public class App
     public static void main( String[] args )
     {
         Window window = new Window(640, 480, "Balls");
+        float ry = 0;
 
         GL.createCapabilities();
+        glDisable(GL_CULL_FACE);
+        glFrontFace(GL_CCW);
         glEnable(GL_DEPTH_TEST);
 
         // Loop.
@@ -69,7 +72,9 @@ public class App
             glMatrixMode(GL_MODELVIEW);
             glLoadIdentity();
 
+            ry += 1.0f;
             glTranslatef(0, 0, -2.5f);
+            glRotatef(ry, 0, 1, 0);
 
             glBegin(GL_TRIANGLES);
             glColor4f(0,0,0,1);
