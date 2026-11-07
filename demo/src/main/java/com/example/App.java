@@ -47,6 +47,7 @@ public class App
         Window window = new Window(640, 480, "Balls");
 
         GL.createCapabilities();
+        glEnable(GL_DEPTH_TEST);
 
         // Loop.
         while (!window.ShouldClose()) {
@@ -56,7 +57,8 @@ public class App
 
             glViewport(0, 0, render_target_width, render_target_height);
             glClearColor(0.25f, 0.25f, 0.25f, 1);
-            glClear(GL_COLOR_BUFFER_BIT);
+            glClearDepth(1.0f);
+            glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 
             // Perspective view.
             glMatrixMode(GL_PROJECTION);
