@@ -3,6 +3,8 @@ package com.example;
 import org.lwjgl.opengl.GL;
 import static org.lwjgl.opengl.GL11.*;
 
+import org.lwjgl.glfw.GLFW;
+
 /**
  * Hello world!
  *
@@ -110,6 +112,7 @@ public class App
     public static void main( String[] args )
     {
         Window window = new Window(640, 480, "Balls");
+        double last_frame_time = 0;
         float ry = 0;
 
         GL.createCapabilities();
@@ -142,6 +145,10 @@ public class App
 
         // Loop.
         while (!window.ShouldClose()) {
+            double current_time = GLFW.glfwGetTime();
+            float dt = (float)(current_time - last_frame_time);
+            last_frame_time = current_time;
+
             int render_target_width  = window.getWidth();
             int render_target_height = window.getHeight();
             float ratio = (float)render_target_width / (float)render_target_height;
@@ -160,7 +167,7 @@ public class App
             glMatrixMode(GL_MODELVIEW);
             glLoadIdentity();
 
-            ry += 1.0f;
+            ry += 50.0f * dt;
             glTranslatef(0, 0, -2.5f);
             glRotatef(ry, 0, 1, 0);
 
