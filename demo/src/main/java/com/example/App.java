@@ -61,19 +61,98 @@ public class App
             // Perspective view.
             glMatrixMode(GL_PROJECTION);
             glLoadIdentity();
-            glFrustum(-ratio, ratio, -1, 1, 0.1f, 100.0f);
+            glFrustum(-0.1f*ratio, 0.1f*ratio, -0.1f, 0.1f, 0.1f, 100.0f);
 
             // Switch to modelview for rendering geometry.
             glMatrixMode(GL_MODELVIEW);
             glLoadIdentity();
 
-            // glTranslatef(0, 0, -0.5f);
+            glTranslatef(0, 0, -2.5f);
 
-            glColor4f(1,1,1,1);
             glBegin(GL_TRIANGLES);
-            glVertex3f(-2.5f, 2.5f, -1.0f);
-            glVertex3f( 2.5f, 2.5f, -1.0f);
-            glVertex3f( 0.0f, 2.5f, -2.0f);
+            glColor4f(0,0,0,1);
+            glVertex3f(-0.5f, -0.5f, 0.5f);
+            glColor4f(1,0,0,1);
+            glVertex3f(+0.5f, -0.5f, 0.5f);
+            glColor4f(1,1,0,1);
+            glVertex3f(+0.5f, -0.5f, -0.5f);
+
+            glColor4f(0,0,0,1);
+            glVertex3f(-0.5f, -0.5f, 0.5f);
+            glColor4f(1,1,0,1);
+            glVertex3f(+0.5f, -0.5f, -0.5f);
+            glColor4f(0,1,0,1);
+            glVertex3f(-0.5f, -0.5f, -0.5f);
+
+            glColor4f(0,1,0,1);
+            glVertex3f(-0.5f, -0.5f, -0.5f);
+            glColor4f(1,1,0,1);
+            glVertex3f(+0.5f, -0.5f, -0.5f);
+            glColor4f(1,1,1,1);
+            glVertex3f(+0.5f, +0.5f, -0.5f);
+
+            glColor4f(0,1,0,1);
+            glVertex3f(-0.5f, -0.5f, -0.5f);
+            glColor4f(1,1,1,1);
+            glVertex3f(+0.5f, +0.5f, -0.5f);
+            glColor4f(0,1,1,1);
+            glVertex3f(-0.5f, +0.5f, -0.5f);
+
+            glColor4f(0,0,0,1);
+            glVertex3f(-0.5f, -0.5f, 0.5f);
+            glColor4f(0,1,0,1);
+            glVertex3f(-0.5f, -0.5f, -0.5f);
+            glColor4f(0,1,1,1);
+            glVertex3f(-0.5f, 0.5f, -0.5f);
+
+            glColor4f(0,0,0,1);
+            glVertex3f(-0.5f, -0.5f, 0.5f);
+            glColor4f(0,1,1,1);
+            glVertex3f(-0.5f, 0.5f, -0.5f);
+            glColor4f(0,0,1,1);
+            glVertex3f(-0.5f, 0.5f, 0.5f);
+
+            glColor4f(1,0,0,1);
+            glVertex3f(+0.5f, -0.5f, 0.5f);
+            glColor4f(1,1,0,1);
+            glVertex3f(+0.5f, -0.5f, -0.5f);
+            glColor4f(1,1,1,1);
+            glVertex3f(+0.5f,  0.5f, -0.5f);
+
+            glColor4f(1,0,0,1);
+            glVertex3f(+0.5f, -0.5f, 0.5f);
+            glColor4f(1,1,1,1);
+            glVertex3f(+0.5f,  0.5f, -0.5f);
+            glColor4f(1,0,1,1);
+            glVertex3f(+0.5f,  0.5f, 0.5f);
+
+            glColor4f(0,0,1,1);
+            glVertex3f(-0.5f, 0.5f, 0.5f);
+            glColor4f(1,0,1,1);
+            glVertex3f(+0.5f, 0.5f, 0.5f);
+            glColor4f(1,1,1,1);
+            glVertex3f(+0.5f, 0.5f, -0.5f);
+
+            glColor4f(0,0,1,1);
+            glVertex3f(-0.5f, 0.5f, 0.5f);
+            glColor4f(1,1,1,1);
+            glVertex3f(+0.5f, 0.5f, -0.5f);
+            glColor4f(0,1,1,1);
+            glVertex3f(-0.5f, 0.5f, -0.5f);
+
+            glColor4f(0,0,0,1);
+            glVertex3f(-0.5f, -0.5f, 0.5f);
+            glColor4f(1,0,0,1);
+            glVertex3f(+0.5f, -0.5f, 0.5f);
+            glColor4f(1,0,1,1);
+            glVertex3f(+0.5f, +0.5f, 0.5f);
+
+            glColor4f(0,0,0,1);
+            glVertex3f(-0.5f, -0.5f, 0.5f);
+            glColor4f(1,0,1,1);
+            glVertex3f(+0.5f, +0.5f, 0.5f);
+            glColor4f(0,0,1,1);
+            glVertex3f(-0.5f, +0.5f, 0.5f);
             glEnd();
 
             // Orthographic Projection.
@@ -81,10 +160,10 @@ public class App
             glLoadIdentity();
             glOrtho(0, render_target_width, 0, render_target_height, -2000, 2000);
 
-            draw_quad(100, 100, 200, 200, 1,1,1,1);
-            draw_quad(350, 350, 360, 360, 0,0,1,1);
+            // draw_quad(100, 100, 200, 200, 1,1,1,1);
+            // draw_quad(350, 350, 360, 360, 0,0,1,1);
 
-            draw_circle(250, 250, 50, 32, 1,1,1,1);
+            // draw_circle(250, 250, 50, 32, 1,1,1,1);
 
             glFlush();
 
