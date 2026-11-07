@@ -45,88 +45,64 @@ public class App
     public static void draw_cube(float x, float y, float z, float half_size, float r, float g, float b, float a) {
         glColor4f(r,g,b,a);
         glBegin(GL_TRIANGLES);
-        glColor4f(0,0,0,1);
+        glNormal3f(0, -1, 0);
         glVertex3f(x-half_size, y-half_size, z+half_size);
-        glColor4f(1,0,0,1);
         glVertex3f(x+half_size, y-half_size, z+half_size);
-        glColor4f(1,1,0,1);
         glVertex3f(x+half_size, y-half_size, z-half_size);
-
-        glColor4f(0,0,0,1);
+        
+        glNormal3f(0, -1, 0);
         glVertex3f(x-half_size, y-half_size, z+half_size);
-        glColor4f(1,1,0,1);
         glVertex3f(x+half_size, y-half_size, z-half_size);
-        glColor4f(0,1,0,1);
         glVertex3f(x-half_size, y-half_size, z-half_size);
-
-        glColor4f(0,1,0,1);
+        
+        glNormal3f(0, 0, -1);
         glVertex3f(x-half_size, y-half_size, z-half_size);
-        glColor4f(1,1,0,1);
         glVertex3f(x+half_size, y-half_size, z-half_size);
-        glColor4f(1,1,1,1);
         glVertex3f(x+half_size, y+half_size, z-half_size);
-
-        glColor4f(0,1,0,1);
+        
+        glNormal3f(0, 0, -1);
         glVertex3f(x-half_size, y-half_size, z-half_size);
-        glColor4f(1,1,1,1);
         glVertex3f(x+half_size, y+half_size, z-half_size);
-        glColor4f(0,1,1,1);
         glVertex3f(x-half_size, y+half_size, z-half_size);
 
-        glColor4f(0,0,0,1);
+        glNormal3f(-1, 0, 0);
         glVertex3f(x-half_size, y-half_size, z+half_size);
-        glColor4f(0,1,0,1);
         glVertex3f(x-half_size, y-half_size, z-half_size);
-        glColor4f(0,1,1,1);
         glVertex3f(x-half_size, y+half_size, z-half_size);
-
-        glColor4f(0,0,0,1);
+        
+        glNormal3f(-1, 0, 0);
         glVertex3f(x-half_size, y-half_size, z+half_size);
-        glColor4f(0,1,1,1);
         glVertex3f(x-half_size, y+half_size, z-half_size);
-        glColor4f(0,0,1,1);
         glVertex3f(x-half_size, y+half_size, z+half_size);
-
-        glColor4f(1,0,0,1);
+        
+        glNormal3f(+1, 0, 0);
         glVertex3f(x+half_size, y-half_size, z+half_size);
-        glColor4f(1,1,0,1);
         glVertex3f(x+half_size, y-half_size, z-half_size);
-        glColor4f(1,1,1,1);
         glVertex3f(x+half_size, y+half_size, z-half_size);
-
-        glColor4f(1,0,0,1);
+        
+        glNormal3f(+1, 0, 0);
         glVertex3f(x+half_size, y-half_size, z+half_size);
-        glColor4f(1,1,1,1);
         glVertex3f(x+half_size, y+half_size, z-half_size);
-        glColor4f(1,0,1,1);
         glVertex3f(x+half_size, y+half_size, z+half_size);
-
-        glColor4f(0,0,1,1);
+        
+        glNormal3f(0, +1, 0);
         glVertex3f(x-half_size, y+half_size, z+half_size);
-        glColor4f(1,0,1,1);
         glVertex3f(x+half_size, y+half_size, z+half_size);
-        glColor4f(1,1,1,1);
         glVertex3f(x+half_size, y+half_size, z-half_size);
-
-        glColor4f(0,0,1,1);
+        
+        glNormal3f(0, +1, 0);
         glVertex3f(x-half_size, y+half_size, z+half_size);
-        glColor4f(1,1,1,1);
         glVertex3f(x+half_size, y+half_size, z-half_size);
-        glColor4f(0,1,1,1);
         glVertex3f(x-half_size, y+half_size, z-half_size);
-
-        glColor4f(0,0,0,1);
+        
+        glNormal3f(0, 0, +1);
         glVertex3f(x-half_size, y-half_size, z+half_size);
-        glColor4f(1,0,0,1);
         glVertex3f(x+half_size, y-half_size, z+half_size);
-        glColor4f(1,0,1,1);
         glVertex3f(x+half_size, y+half_size, z+half_size);
-
-        glColor4f(0,0,0,1);
+        
+        glNormal3f(0, 0, +1);
         glVertex3f(x-half_size, y-half_size, z+half_size);
-        glColor4f(1,0,1,1);
         glVertex3f(x+half_size, y+half_size, z+half_size);
-        glColor4f(0,0,1,1);
         glVertex3f(x-half_size, y+half_size, z+half_size);
         glEnd();
     }
@@ -140,6 +116,31 @@ public class App
         glDisable(GL_CULL_FACE);
         glFrontFace(GL_CCW);
         glEnable(GL_DEPTH_TEST);
+
+        // Lights config.
+        glShadeModel(GL_SMOOTH);
+        glEnable(GL_NORMALIZE);
+        glEnable(GL_LIGHTING);
+
+        // Ambient light.
+        float ambient_color[] = {0.2f, 0.2f, 0.2f, 1.0f};
+        glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambient_color);
+
+        // Light source.
+        float diffuse[]  = {1,0,0,1};
+        float ambient[]  = {0.5f,0,0,1};
+        float specular[] = {1,1,1,1};
+
+        glLightfv(GL_LIGHT0, GL_DIFFUSE,  diffuse);
+        glLightfv(GL_LIGHT0, GL_AMBIENT,  ambient);
+        glLightfv(GL_LIGHT0, GL_SPECULAR, specular);
+        glEnable(GL_LIGHT0);
+
+        // Light position.
+        float light_pos[] = {1,1,1,1};
+        glLightfv(GL_LIGHT0, GL_POSITION, light_pos);
+
+
 
         // Loop.
         while (!window.ShouldClose()) {
@@ -165,7 +166,7 @@ public class App
             glTranslatef(0, 0, -2.5f);
             glRotatef(ry, 0, 1, 0);
 
-            draw_cube(5, 0, 0, 0.5f, 1, 1, 1, 1);
+            draw_cube(5, 0, 0, 0.5f, 1,0.5f,0.5f,1);
 
             draw_cube(0,0,0, 0.1f, 1,1,1,1);
 
