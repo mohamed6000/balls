@@ -52,13 +52,29 @@ public class App
         while (!window.ShouldClose()) {
             int render_target_width  = window.getWidth();
             int render_target_height = window.getHeight();
+            float ratio = (float)render_target_width / (float)render_target_height;
+
             glViewport(0, 0, render_target_width, render_target_height);
             glClearColor(0.25f, 0.25f, 0.25f, 1);
             glClear(GL_COLOR_BUFFER_BIT);
 
+            // Perspective view.
+            glMatrixMode(GL_PROJECTION);
+            glLoadIdentity();
+            glFrustum(-ratio, ratio, -1, 1, 0.1f, 100.0f);
+
             // Switch to modelview for rendering geometry.
             glMatrixMode(GL_MODELVIEW);
             glLoadIdentity();
+
+            // glTranslatef(0, 0, -0.5f);
+
+            glColor4f(1,1,1,1);
+            glBegin(GL_TRIANGLES);
+            glVertex3f(-2.5f, 2.5f, -1.0f);
+            glVertex3f( 2.5f, 2.5f, -1.0f);
+            glVertex3f( 0.0f, 2.5f, -2.0f);
+            glEnd();
 
             // Orthographic Projection.
             glMatrixMode(GL_PROJECTION);
