@@ -140,8 +140,6 @@ public class App
         float light_pos[] = {1,1,1,1};
         glLightfv(GL_LIGHT0, GL_POSITION, light_pos);
 
-
-
         // Loop.
         while (!window.ShouldClose()) {
             int render_target_width  = window.getWidth();
@@ -166,6 +164,8 @@ public class App
             glTranslatef(0, 0, -2.5f);
             glRotatef(ry, 0, 1, 0);
 
+            glEnable(GL_LIGHTING);
+
             draw_cube(5, 0, 0, 0.5f, 1,0.5f,0.5f,1);
 
             draw_cube(0,0,0, 0.1f, 1,1,1,1);
@@ -174,11 +174,15 @@ public class App
             glMatrixMode(GL_PROJECTION);
             glLoadIdentity();
             glOrtho(0, render_target_width, 0, render_target_height, -2000, 2000);
+            glDisable(GL_LIGHTING);
 
-            // draw_quad(100, 100, 200, 200, 1,1,1,1);
-            // draw_quad(350, 350, 360, 360, 0,0,1,1);
+            glMatrixMode(GL_MODELVIEW);
+            glLoadIdentity();
 
-            // draw_circle(250, 250, 50, 32, 1,1,1,1);
+            draw_quad(100, 100, 200, 200, 1,1,1,1);
+            draw_quad(350, 350, 360, 360, 0,0,1,1);
+
+            draw_circle(250, 250, 50, 32, 1,1,1,1);
 
             glFlush();
 
