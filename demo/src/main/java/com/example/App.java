@@ -42,6 +42,95 @@ public class App
         glEnd();
     }
 
+    public static void draw_cube(float x, float y, float z, float half_size, float r, float g, float b, float a) {
+        glColor4f(r,g,b,a);
+        glBegin(GL_TRIANGLES);
+        glColor4f(0,0,0,1);
+        glVertex3f(x-half_size, y-half_size, z+half_size);
+        glColor4f(1,0,0,1);
+        glVertex3f(x+half_size, y-half_size, z+half_size);
+        glColor4f(1,1,0,1);
+        glVertex3f(x+half_size, y-half_size, z-half_size);
+
+        glColor4f(0,0,0,1);
+        glVertex3f(x-half_size, y-half_size, z+half_size);
+        glColor4f(1,1,0,1);
+        glVertex3f(x+half_size, y-half_size, z-half_size);
+        glColor4f(0,1,0,1);
+        glVertex3f(x-half_size, y-half_size, z-half_size);
+
+        glColor4f(0,1,0,1);
+        glVertex3f(x-half_size, y-half_size, z-half_size);
+        glColor4f(1,1,0,1);
+        glVertex3f(x+half_size, y-half_size, z-half_size);
+        glColor4f(1,1,1,1);
+        glVertex3f(x+half_size, y+half_size, z-half_size);
+
+        glColor4f(0,1,0,1);
+        glVertex3f(x-half_size, y-half_size, z-half_size);
+        glColor4f(1,1,1,1);
+        glVertex3f(x+half_size, y+half_size, z-half_size);
+        glColor4f(0,1,1,1);
+        glVertex3f(x-half_size, y+half_size, z-half_size);
+
+        glColor4f(0,0,0,1);
+        glVertex3f(x-half_size, y-half_size, z+half_size);
+        glColor4f(0,1,0,1);
+        glVertex3f(x-half_size, y-half_size, z-half_size);
+        glColor4f(0,1,1,1);
+        glVertex3f(x-half_size, y+half_size, z-half_size);
+
+        glColor4f(0,0,0,1);
+        glVertex3f(x-half_size, y-half_size, z+half_size);
+        glColor4f(0,1,1,1);
+        glVertex3f(x-half_size, y+half_size, z-half_size);
+        glColor4f(0,0,1,1);
+        glVertex3f(x-half_size, y+half_size, z+half_size);
+
+        glColor4f(1,0,0,1);
+        glVertex3f(x+half_size, y-half_size, z+half_size);
+        glColor4f(1,1,0,1);
+        glVertex3f(x+half_size, y-half_size, z-half_size);
+        glColor4f(1,1,1,1);
+        glVertex3f(x+half_size, y+half_size, z-half_size);
+
+        glColor4f(1,0,0,1);
+        glVertex3f(x+half_size, y-half_size, z+half_size);
+        glColor4f(1,1,1,1);
+        glVertex3f(x+half_size, y+half_size, z-half_size);
+        glColor4f(1,0,1,1);
+        glVertex3f(x+half_size, y+half_size, z+half_size);
+
+        glColor4f(0,0,1,1);
+        glVertex3f(x-half_size, y+half_size, z+half_size);
+        glColor4f(1,0,1,1);
+        glVertex3f(x+half_size, y+half_size, z+half_size);
+        glColor4f(1,1,1,1);
+        glVertex3f(x+half_size, y+half_size, z-half_size);
+
+        glColor4f(0,0,1,1);
+        glVertex3f(x-half_size, y+half_size, z+half_size);
+        glColor4f(1,1,1,1);
+        glVertex3f(x+half_size, y+half_size, z-half_size);
+        glColor4f(0,1,1,1);
+        glVertex3f(x-half_size, y+half_size, z-half_size);
+
+        glColor4f(0,0,0,1);
+        glVertex3f(x-half_size, y-half_size, z+half_size);
+        glColor4f(1,0,0,1);
+        glVertex3f(x+half_size, y-half_size, z+half_size);
+        glColor4f(1,0,1,1);
+        glVertex3f(x+half_size, y+half_size, z+half_size);
+
+        glColor4f(0,0,0,1);
+        glVertex3f(x-half_size, y-half_size, z+half_size);
+        glColor4f(1,0,1,1);
+        glVertex3f(x+half_size, y+half_size, z+half_size);
+        glColor4f(0,0,1,1);
+        glVertex3f(x-half_size, y+half_size, z+half_size);
+        glEnd();
+    }
+
     public static void main( String[] args )
     {
         Window window = new Window(640, 480, "Balls");
@@ -76,91 +165,9 @@ public class App
             glTranslatef(0, 0, -2.5f);
             glRotatef(ry, 0, 1, 0);
 
-            glBegin(GL_TRIANGLES);
-            glColor4f(0,0,0,1);
-            glVertex3f(-0.5f, -0.5f, 0.5f);
-            glColor4f(1,0,0,1);
-            glVertex3f(+0.5f, -0.5f, 0.5f);
-            glColor4f(1,1,0,1);
-            glVertex3f(+0.5f, -0.5f, -0.5f);
+            draw_cube(5, 0, 0, 0.5f, 1, 1, 1, 1);
 
-            glColor4f(0,0,0,1);
-            glVertex3f(-0.5f, -0.5f, 0.5f);
-            glColor4f(1,1,0,1);
-            glVertex3f(+0.5f, -0.5f, -0.5f);
-            glColor4f(0,1,0,1);
-            glVertex3f(-0.5f, -0.5f, -0.5f);
-
-            glColor4f(0,1,0,1);
-            glVertex3f(-0.5f, -0.5f, -0.5f);
-            glColor4f(1,1,0,1);
-            glVertex3f(+0.5f, -0.5f, -0.5f);
-            glColor4f(1,1,1,1);
-            glVertex3f(+0.5f, +0.5f, -0.5f);
-
-            glColor4f(0,1,0,1);
-            glVertex3f(-0.5f, -0.5f, -0.5f);
-            glColor4f(1,1,1,1);
-            glVertex3f(+0.5f, +0.5f, -0.5f);
-            glColor4f(0,1,1,1);
-            glVertex3f(-0.5f, +0.5f, -0.5f);
-
-            glColor4f(0,0,0,1);
-            glVertex3f(-0.5f, -0.5f, 0.5f);
-            glColor4f(0,1,0,1);
-            glVertex3f(-0.5f, -0.5f, -0.5f);
-            glColor4f(0,1,1,1);
-            glVertex3f(-0.5f, 0.5f, -0.5f);
-
-            glColor4f(0,0,0,1);
-            glVertex3f(-0.5f, -0.5f, 0.5f);
-            glColor4f(0,1,1,1);
-            glVertex3f(-0.5f, 0.5f, -0.5f);
-            glColor4f(0,0,1,1);
-            glVertex3f(-0.5f, 0.5f, 0.5f);
-
-            glColor4f(1,0,0,1);
-            glVertex3f(+0.5f, -0.5f, 0.5f);
-            glColor4f(1,1,0,1);
-            glVertex3f(+0.5f, -0.5f, -0.5f);
-            glColor4f(1,1,1,1);
-            glVertex3f(+0.5f,  0.5f, -0.5f);
-
-            glColor4f(1,0,0,1);
-            glVertex3f(+0.5f, -0.5f, 0.5f);
-            glColor4f(1,1,1,1);
-            glVertex3f(+0.5f,  0.5f, -0.5f);
-            glColor4f(1,0,1,1);
-            glVertex3f(+0.5f,  0.5f, 0.5f);
-
-            glColor4f(0,0,1,1);
-            glVertex3f(-0.5f, 0.5f, 0.5f);
-            glColor4f(1,0,1,1);
-            glVertex3f(+0.5f, 0.5f, 0.5f);
-            glColor4f(1,1,1,1);
-            glVertex3f(+0.5f, 0.5f, -0.5f);
-
-            glColor4f(0,0,1,1);
-            glVertex3f(-0.5f, 0.5f, 0.5f);
-            glColor4f(1,1,1,1);
-            glVertex3f(+0.5f, 0.5f, -0.5f);
-            glColor4f(0,1,1,1);
-            glVertex3f(-0.5f, 0.5f, -0.5f);
-
-            glColor4f(0,0,0,1);
-            glVertex3f(-0.5f, -0.5f, 0.5f);
-            glColor4f(1,0,0,1);
-            glVertex3f(+0.5f, -0.5f, 0.5f);
-            glColor4f(1,0,1,1);
-            glVertex3f(+0.5f, +0.5f, 0.5f);
-
-            glColor4f(0,0,0,1);
-            glVertex3f(-0.5f, -0.5f, 0.5f);
-            glColor4f(1,0,1,1);
-            glVertex3f(+0.5f, +0.5f, 0.5f);
-            glColor4f(0,0,1,1);
-            glVertex3f(-0.5f, +0.5f, 0.5f);
-            glEnd();
+            draw_cube(0,0,0, 0.1f, 1,1,1,1);
 
             // Orthographic Projection.
             glMatrixMode(GL_PROJECTION);
