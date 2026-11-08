@@ -13,7 +13,8 @@ public class App
         double last_frame_time = 0;
 
         Renderer r = new Renderer();
-        int tex_container = r.CreateTexture("assets/textures/container.jpg", true, true);
+        int tex_container  = r.CreateTexture("assets/textures/container.jpg", true, true);
+        int tex_container2 = r.CreateTexture("assets/textures/container2.png", true, true);
 
         // Level.
         int width[] = new int[1];
@@ -31,7 +32,9 @@ public class App
 
                 int index = i / 4;
                 if (red == 128 && green == 64 && blue == 0) {
-                    level[index] = 1;
+                    level[index] = tex_container;
+                }else if (red == 213 && green == 106 && blue == 0) {
+                    level[index] = tex_container2;
                 } else {
                     level[index] = 0;
                 }
@@ -66,11 +69,12 @@ public class App
             glTranslatef(-5, -5, -15.0f);
 
             glEnable(GL_LIGHTING);
-            glBindTexture(GL_TEXTURE_2D, tex_container);
 
             for (int y = 0; y < height[0]; y++) {
                 for (int x = 0; x < width[0]; x++) {
-                    if (level[y*width[0]+x] == 1) {
+                    int tile = level[y*width[0]+x];
+                    if (tile != 0) {
+                        glBindTexture(GL_TEXTURE_2D, tile);
                         r.DrawCube(x, 0, y, 0.5f, 1,1,1,1);
                     }
                 }
