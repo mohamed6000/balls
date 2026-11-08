@@ -1,223 +1,42 @@
 package com.example;
 
-import org.lwjgl.opengl.GL;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.stb.STBImage.*;
-
 import java.nio.ByteBuffer;
 import org.lwjgl.glfw.GLFW;
 
 public class App 
 {
-    public static void draw_quad(float x0, float y0, float x1, float y1, float r, float g, float b, float a) {
-        glColor4f(r,g,b,a);
-        glBegin(GL_TRIANGLES);
-            glVertex3f(x0, y0, 0);
-            glVertex3f(x1, y0, 0);
-            glVertex3f(x1, y1, 0);
-
-            glVertex3f(x0, y0, 0);
-            glVertex3f(x1, y1, 0);
-            glVertex3f(x0, y1, 0);
-        glEnd();
-    }
-
-    public static void draw_circle(float x, float y, float radius, int segments, float r, float g, float b, float a) {
-        int i;
-        float t0, t1, ct0, st0, ct1, st1;
-        glColor4f(r,g,b,a);
-        glBegin(GL_TRIANGLES);
-        for (i = 0; i < segments; i++) {
-            t0 = (float)i / segments * (float)Math.TAU;
-            t1 = (float)(i+1) / segments * (float)Math.TAU;
-            ct0 = (float)Math.cos(t0);
-            st0 = (float)Math.sin(t0);
-            ct1 = (float)Math.cos(t1);
-            st1 = (float)Math.sin(t1);
-
-            glVertex3f(x, y, 0);
-            glVertex3f(x+ct0*radius, y+st0*radius, 0);
-            glVertex3f(x+ct1*radius, y+st1*radius, 0);
-        }
-        glEnd();
-    }
-
-    public static void draw_cube(float x, float y, float z, float half_size, float r, float g, float b, float a) {
-        glColor4f(r,g,b,a);
-        glBegin(GL_TRIANGLES);
-        glNormal3f(0, -1, 0);
-        glTexCoord2f(0, 0);
-        glVertex3f(x-half_size, y-half_size, z+half_size);
-        glTexCoord2f(1, 0);
-        glVertex3f(x+half_size, y-half_size, z+half_size);
-        glTexCoord2f(1, 1);
-        glVertex3f(x+half_size, y-half_size, z-half_size);
-        
-        glNormal3f(0, -1, 0);
-        glTexCoord2f(0, 0);
-        glVertex3f(x-half_size, y-half_size, z+half_size);
-        glTexCoord2f(1, 1);
-        glVertex3f(x+half_size, y-half_size, z-half_size);
-        glTexCoord2f(0, 1);
-        glVertex3f(x-half_size, y-half_size, z-half_size);
-        
-        glNormal3f(0, 0, -1);
-        glTexCoord2f(0, 0);
-        glVertex3f(x-half_size, y-half_size, z-half_size);
-        glTexCoord2f(1, 0);
-        glVertex3f(x+half_size, y-half_size, z-half_size);
-        glTexCoord2f(1, 1);
-        glVertex3f(x+half_size, y+half_size, z-half_size);
-        
-        glNormal3f(0, 0, -1);
-        glTexCoord2f(0, 0);
-        glVertex3f(x-half_size, y-half_size, z-half_size);
-        glTexCoord2f(1, 1);
-        glVertex3f(x+half_size, y+half_size, z-half_size);
-        glTexCoord2f(0, 1);
-        glVertex3f(x-half_size, y+half_size, z-half_size);
-
-        glNormal3f(-1, 0, 0);
-        glTexCoord2f(0, 0);
-        glVertex3f(x-half_size, y-half_size, z+half_size);
-        glTexCoord2f(1, 0);
-        glVertex3f(x-half_size, y-half_size, z-half_size);
-        glTexCoord2f(1, 1);
-        glVertex3f(x-half_size, y+half_size, z-half_size);
-        
-        glNormal3f(-1, 0, 0);
-        glTexCoord2f(0, 0);
-        glVertex3f(x-half_size, y-half_size, z+half_size);
-        glTexCoord2f(1, 1);
-        glVertex3f(x-half_size, y+half_size, z-half_size);
-        glTexCoord2f(0, 1);
-        glVertex3f(x-half_size, y+half_size, z+half_size);
-        
-        glNormal3f(+1, 0, 0);
-        glTexCoord2f(0, 0);
-        glVertex3f(x+half_size, y-half_size, z+half_size);
-        glTexCoord2f(1, 0);
-        glVertex3f(x+half_size, y-half_size, z-half_size);
-        glTexCoord2f(1, 1);
-        glVertex3f(x+half_size, y+half_size, z-half_size);
-        
-        glNormal3f(+1, 0, 0);
-        glTexCoord2f(0, 0);
-        glVertex3f(x+half_size, y-half_size, z+half_size);
-        glTexCoord2f(1, 1);
-        glVertex3f(x+half_size, y+half_size, z-half_size);
-        glTexCoord2f(0, 1);
-        glVertex3f(x+half_size, y+half_size, z+half_size);
-        
-        glNormal3f(0, +1, 0);
-        glTexCoord2f(0, 0);
-        glVertex3f(x-half_size, y+half_size, z+half_size);
-        glTexCoord2f(1, 0);
-        glVertex3f(x+half_size, y+half_size, z+half_size);
-        glTexCoord2f(1, 1);
-        glVertex3f(x+half_size, y+half_size, z-half_size);
-        
-        glNormal3f(0, +1, 0);
-        glTexCoord2f(0, 0);
-        glVertex3f(x-half_size, y+half_size, z+half_size);
-        glTexCoord2f(1, 1);
-        glVertex3f(x+half_size, y+half_size, z-half_size);
-        glTexCoord2f(0, 1);
-        glVertex3f(x-half_size, y+half_size, z-half_size);
-        
-        glNormal3f(0, 0, +1);
-        glTexCoord2f(0, 0);
-        glVertex3f(x-half_size, y-half_size, z+half_size);
-        glTexCoord2f(1, 0);
-        glVertex3f(x+half_size, y-half_size, z+half_size);
-        glTexCoord2f(1, 1);
-        glVertex3f(x+half_size, y+half_size, z+half_size);
-        
-        glNormal3f(0, 0, +1);
-        glTexCoord2f(0, 0);
-        glVertex3f(x-half_size, y-half_size, z+half_size);
-        glTexCoord2f(1, 1);
-        glVertex3f(x+half_size, y+half_size, z+half_size);
-        glTexCoord2f(0, 1);
-        glVertex3f(x-half_size, y+half_size, z+half_size);
-        glEnd();
-    }
-
     public static void main( String[] args )
     {
         Window window = new Window(640, 480, "Balls");
         double last_frame_time = 0;
-        float ry = 0;
 
-        GL.createCapabilities();
-        glDisable(GL_CULL_FACE);
-        glFrontFace(GL_CCW);
-        glEnable(GL_DEPTH_TEST);
+        Renderer r = new Renderer();
+        int tex_container = r.CreateTexture("assets/textures/container.jpg", true, true);
 
-        glEnable(GL_TEXTURE_2D);
-
-        // Lights config.
-        glShadeModel(GL_SMOOTH);
-        glEnable(GL_NORMALIZE);
-        glEnable(GL_LIGHTING);
-
-        // Ambient light.
-        float ambient_color[] = {0.2f, 0.2f, 0.2f, 1.0f};
-        glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambient_color);
-
-        // Light source.
-        float diffuse[]  = {1,1,1,1};
-        float ambient[]  = {0.5f,0,0,1};
-        float specular[] = {1,1,1,1};
-
-        glLightfv(GL_LIGHT0, GL_DIFFUSE,  diffuse);
-        glLightfv(GL_LIGHT0, GL_AMBIENT,  ambient);
-        glLightfv(GL_LIGHT0, GL_SPECULAR, specular);
-        glEnable(GL_LIGHT0);
-
-        // Light position.
-        float light_pos[] = {1,1,1,1};
-        glLightfv(GL_LIGHT0, GL_POSITION, light_pos);
-
+        // Level.
         int width[] = new int[1];
         int height[] = new int[1];
         int channels[] = new int[1];
-        ByteBuffer data = stbi_load("assets/textures/container.jpg", width, height, channels, 4);
-
-        int texture_id = glGenTextures();
-        glBindTexture(GL_TEXTURE_2D, texture_id);
-
-        glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-
-        // Set texture filters.
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    
-        // Set texture wrapping.
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width[0], height[0], 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-        stbi_image_free(data);
-
-        // Level.
-        data = stbi_load("assets/levels/test.bmp", width, height, channels, 4);
+        ByteBuffer data = stbi_load("assets/levels/test.bmp", width, height, channels, 4);
         int level[] = null;
         if (data != null) {
             level = new int[height[0]*width[0]];
             int total_bytes = width[0] * height[0] * 4;
             for (int i = 0; i < total_bytes; i += 4) {
-                int r = data.get(i)   & 0xFF;
-                int g = data.get(i+1) & 0xFF;
-                int b = data.get(i+2) & 0xFF;
+                int red   = data.get(i)   & 0xFF;
+                int green = data.get(i+1) & 0xFF;
+                int blue  = data.get(i+2) & 0xFF;
 
                 int index = i / 4;
-                if (r == 128 && g == 64 && b == 0) {
+                if (red == 128 && green == 64 && blue == 0) {
                     level[index] = 1;
                 } else {
                     level[index] = 0;
                 }
             }
+            stbi_image_free(data);
         }
 
         // Loop.
@@ -244,24 +63,19 @@ public class App
             glMatrixMode(GL_MODELVIEW);
             glLoadIdentity();
 
-            // ry += 50.0f * dt;
             glTranslatef(-5, -5, -15.0f);
-            // glRotatef(ry, 0, 1, 0);
 
             glEnable(GL_LIGHTING);
-            glBindTexture(GL_TEXTURE_2D, texture_id);
+            glBindTexture(GL_TEXTURE_2D, tex_container);
 
             for (int y = 0; y < height[0]; y++) {
                 for (int x = 0; x < width[0]; x++) {
                     if (level[y*width[0]+x] == 1) {
-                        draw_cube(x, 0, y, 0.5f, 1,1,1,1);
+                        r.DrawCube(x, 0, y, 0.5f, 1,1,1,1);
                     }
                 }
             }
-            
-            // draw_cube(5, 0, 0, 0.5f, 1,1,1,1);
-            // draw_cube(0,0,0, 0.5f, 1,1,1,1);
-            
+
             // Orthographic Projection.
             glMatrixMode(GL_PROJECTION);
             glLoadIdentity();
