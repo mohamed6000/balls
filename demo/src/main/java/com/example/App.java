@@ -198,6 +198,27 @@ public class App
         glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
         glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width[0], height[0], 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+        stbi_image_free(data);
+
+        // Level.
+        data = stbi_load("assets/levels/test.bmp", width, height, channels, 4);
+        int level[] = null;
+        if (data != null) {
+            level = new int[height[0]*width[0]];
+            int total_bytes = width[0] * height[0] * 4;
+            for (int i = 0; i < total_bytes; i += 4) {
+                int r = data.get(i)   & 0xFF;
+                int g = data.get(i+1) & 0xFF;
+                int b = data.get(i+2) & 0xFF;
+
+                int index = i / 4;
+                if (r == 128 && g == 64 && b == 0) {
+                    level[index] = 1;
+                } else {
+                    level[index] = 0;
+                }
+            }
+        }
 
         // Loop.
         while (!window.ShouldClose()) {
@@ -223,16 +244,23 @@ public class App
             glMatrixMode(GL_MODELVIEW);
             glLoadIdentity();
 
-            ry += 50.0f * dt;
-            glTranslatef(0, 0, -2.5f);
-            glRotatef(ry, 0, 1, 0);
+            // ry += 50.0f * dt;
+            glTranslatef(-5, -5, -15.0f);
+            // glRotatef(ry, 0, 1, 0);
 
             glEnable(GL_LIGHTING);
-
             glBindTexture(GL_TEXTURE_2D, texture_id);
+
+            for (int y = 0; y < height[0]; y++) {
+                for (int x = 0; x < width[0]; x++) {
+                    if (level[y*width[0]+x] == 1) {
+                        draw_cube(x, 0, y, 0.5f, 1,1,1,1);
+                    }
+                }
+            }
             
-            draw_cube(5, 0, 0, 0.5f, 1,1,1,1);
-            draw_cube(0,0,0, 0.5f, 1,1,1,1);
+            // draw_cube(5, 0, 0, 0.5f, 1,1,1,1);
+            // draw_cube(0,0,0, 0.5f, 1,1,1,1);
             
             // Orthographic Projection.
             glMatrixMode(GL_PROJECTION);
