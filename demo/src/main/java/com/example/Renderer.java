@@ -145,25 +145,27 @@ public class Renderer {
         height   = new int[1];
         channels = new int[1];
         data = stbi_load(filename, width, height, channels, 4);
-
-        texture_id = glGenTextures();
-        glBindTexture(GL_TEXTURE_2D, texture_id);
-
-        glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-
-        // Set texture filters.
-        gl_filter = filter ? GL_LINEAR : GL_NEAREST;
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gl_filter);
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, gl_filter);
-    
-        // Set texture wrapping.
-        gl_wrap = wrap ? GL_REPEAT : GL_CLAMP;
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, gl_wrap);
-        glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, gl_wrap);
-
         if (data != null) {
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width[0], height[0], 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-            stbi_image_free(data);
+            texture_id = glGenTextures();
+            glBindTexture(GL_TEXTURE_2D, texture_id);
+
+            glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+
+            // Set texture filters.
+            gl_filter = filter ? GL_LINEAR : GL_NEAREST;
+            glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gl_filter);
+            glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, gl_filter);
+        
+            // Set texture wrapping.
+            gl_wrap = wrap ? GL_REPEAT : GL_CLAMP;
+            glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, gl_wrap);
+            glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, gl_wrap);
+
+                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width[0], height[0], 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+                stbi_image_free(data);
+        } else {
+            texture_id = 0;
+            System.out.println("Failed to load bitmap: " + filename);
         }
         return texture_id;
     }
