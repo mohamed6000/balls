@@ -13,10 +13,11 @@ public class App
         double last_frame_time = 0;
 
         Renderer r = new Renderer();
-        int camera[] = {0, 5, 15};
+        int camera[] = {0, 3, 7};
         int tex_container  = r.CreateTexture("assets/textures/container.jpg", true, true);
         int tex_container2 = r.CreateTexture("assets/textures/container2.png", true, true);
         int tex_earth      = r.CreateTexture("assets/textures/earth.png", true, true);
+        int tex_grass      = r.CreateTexture("assets/textures/texGrass.png", true, true);
 
         float rx = 0;
 
@@ -74,19 +75,55 @@ public class App
 
             glEnable(GL_LIGHTING);
 
-            // for (int y = 0; y < height[0]; y++) {
-            //     for (int x = 0; x < width[0]; x++) {
-            //         int tile = level[y*width[0]+x];
-            //         if (tile != 0) {
-            //             glBindTexture(GL_TEXTURE_2D, tile);
-            //             r.DrawCube(x, 0, y, 0.5f, 1,1,1,1);
-            //         }
-            //     }
-            // }
+            for (int y = 0; y < height[0]; y++) {
+                for (int x = 0; x < width[0]; x++) {
+                    int tile = level[y*width[0]+x];
+                    if (tile != 0) {
+                        glBindTexture(GL_TEXTURE_2D, tile);
+                        r.DrawCube(x, 0, y, 0.5f, 1,1,1,1);
+                    }
+                }
+            }
+
+            // Floor.
+            {
+                float x0 = -width[0]  * 0.5f;
+                float z0 = -height[0] * 0.5f;
+                float x1 = +width[0]  * 0.5f;
+                float z1 = +height[0] * 0.5f;
+                float y = -0.5f;
+                glBindTexture(GL_TEXTURE_2D, tex_grass);
+                glColor4f(1,1,1,1);
+                glBegin(GL_TRIANGLES);
+                glTexCoord2f(0,0);
+                glNormal3f(0, 1, 0);
+                glVertex3f(x0, y, z0);
+
+                glTexCoord2f(1,0);
+                glNormal3f(0, 1, 0);
+                glVertex3f(x1, y, z0);
+
+                glTexCoord2f(1,1);
+                glNormal3f(0, 1, 0);
+                glVertex3f(x1, y, z1);
+
+                glTexCoord2f(0,0);
+                glNormal3f(0, 1, 0);
+                glVertex3f(x0, y, z0);
+
+                glTexCoord2f(1,1);
+                glNormal3f(0, 1, 0);
+                glVertex3f(x1, y, z1);
+
+                glTexCoord2f(0,1);
+                glNormal3f(0, 1, 0);
+                glVertex3f(x0, y, z1);
+                glEnd();
+            }
 
             rx += 150 * dt;
 
-            float ss = 10;
+            float ss = 1;
             glScalef(ss, ss, ss);
             glRotatef(rx, 0, 1, 0);
             glBindTexture(GL_TEXTURE_2D, tex_earth);
