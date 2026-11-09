@@ -13,8 +13,12 @@ public class App
         double last_frame_time = 0;
 
         Renderer r = new Renderer();
+        int camera[] = {0, 5, 15};
         int tex_container  = r.CreateTexture("assets/textures/container.jpg", true, true);
         int tex_container2 = r.CreateTexture("assets/textures/container2.png", true, true);
+        int tex_earth      = r.CreateTexture("assets/textures/earth.png", true, true);
+
+        float rx = 0;
 
         // Level.
         int width[] = new int[1];
@@ -66,19 +70,27 @@ public class App
             glMatrixMode(GL_MODELVIEW);
             glLoadIdentity();
 
-            glTranslatef(-5, -5, -15.0f);
+            glTranslatef(-camera[0], -camera[1], -camera[2]);
 
             glEnable(GL_LIGHTING);
 
-            for (int y = 0; y < height[0]; y++) {
-                for (int x = 0; x < width[0]; x++) {
-                    int tile = level[y*width[0]+x];
-                    if (tile != 0) {
-                        glBindTexture(GL_TEXTURE_2D, tile);
-                        r.DrawCube(x, 0, y, 0.5f, 1,1,1,1);
-                    }
-                }
-            }
+            // for (int y = 0; y < height[0]; y++) {
+            //     for (int x = 0; x < width[0]; x++) {
+            //         int tile = level[y*width[0]+x];
+            //         if (tile != 0) {
+            //             glBindTexture(GL_TEXTURE_2D, tile);
+            //             r.DrawCube(x, 0, y, 0.5f, 1,1,1,1);
+            //         }
+            //     }
+            // }
+
+            rx += 150 * dt;
+
+            float ss = 10;
+            glScalef(ss, ss, ss);
+            glRotatef(rx, 0, 1, 0);
+            glBindTexture(GL_TEXTURE_2D, tex_earth);
+            r.DrawSphere(0, 0, 0, 1,1,1,1);
 
             // Orthographic Projection.
             glMatrixMode(GL_PROJECTION);
