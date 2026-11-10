@@ -13,7 +13,7 @@ public class App
         double last_frame_time = 0;
 
         Renderer r = new Renderer();
-        float camera[] = {0, 3, 7};
+        float camera[] = {0, 3, 14};
         float player[] = {0, 0, 0};
 
         int tex_container  = r.CreateTexture("assets/textures/container.jpg", true, true);
@@ -147,10 +147,11 @@ public class App
             // Draw player ball.
             {
                 float ss = 1;
-                glScalef(ss, ss, ss);
+                glTranslatef(player[0], player[1], player[2]);
                 glRotatef(rx, 0, 1, 0);
+                glScalef(ss, ss, ss);
                 glBindTexture(GL_TEXTURE_2D, tex_earth);
-                r.DrawSphere(player[0], player[1], player[2], 1,1,1,1);
+                r.DrawSphere(0, 0, 0, 1,1,1,1);
             }
 
             // Orthographic Projection.
