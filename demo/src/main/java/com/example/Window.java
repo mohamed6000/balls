@@ -17,6 +17,7 @@ public class Window {
     private long window_pointer;
     private int width, height;
     private boolean buttons[];
+    private boolean previous_buttons[];
 
     public Window(int width, int height, String title) {
         if (!glfwInit()) {
@@ -27,6 +28,7 @@ public class Window {
         this.height = height;
 
         buttons = new boolean[Button.COUNT.ordinal()];
+        previous_buttons = new boolean[Button.COUNT.ordinal()];
 
         glfwDefaultWindowHints();
         glfwWindowHint(GLFW_VISIBLE,   GLFW_FALSE);
@@ -54,6 +56,7 @@ public class Window {
             } else if (key == GLFW_KEY_ENTER) {
                 button_code = Button.ACTION;
             }
+
             int button_index = button_code.ordinal();
 
             if (action == GLFW_PRESS) {
@@ -85,6 +88,7 @@ public class Window {
     }
 
     public void UpdateEvents() {
+        System.arraycopy(buttons, 0, previous_buttons, 0, buttons.length);
         glfwPollEvents();
     }
 
@@ -104,5 +108,13 @@ public class Window {
         int keycode = button.ordinal();
         assert(keycode < buttons.length);
         return buttons[keycode];
+    }
+
+    public boolean IsButtonPressed(Button button) {
+        int keycode = button.ordinal();
+        assert(keycode < buttons.length);
+        boolean was_down = previous_buttons[keycode];
+        boolean is_down = buttons[keycode];
+        return is_down && !was_down;
     }
 }

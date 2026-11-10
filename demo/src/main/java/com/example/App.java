@@ -64,6 +64,10 @@ public class App
                 System.out.println("Backward");
             }
 
+            if (window.IsButtonPressed(Button.ACTION)) {
+                System.out.println("ACTION!");
+            }
+
             glViewport(0, 0, render_target_width, render_target_height);
             glClearColor(0.25f, 0.25f, 0.25f, 1);
             glClearDepth(1.0f);
