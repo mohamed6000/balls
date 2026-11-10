@@ -13,7 +13,9 @@ public class App
         double last_frame_time = 0;
 
         Renderer r = new Renderer();
-        int camera[] = {0, 3, 7};
+        float camera[] = {0, 3, 7};
+        float player[] = {0, 0, 0};
+
         int tex_container  = r.CreateTexture("assets/textures/container.jpg", true, true);
         int tex_container2 = r.CreateTexture("assets/textures/container2.png", true, true);
         int tex_earth      = r.CreateTexture("assets/textures/earth.png", true, true);
@@ -36,7 +38,11 @@ public class App
                 int blue  = data.get(i+2) & 0xFF;
 
                 int index = i / 4;
-                if (red == 128 && green == 64 && blue == 0) {
+                if (red == 0 && green == 0 && blue == 0) {
+                    // Player ball position.
+                    player[0] = (float)(index % width[0]);  // X
+                    player[2] = (float)(index / width[0]);  // Z
+                } else if (red == 128 && green == 64 && blue == 0) {
                     level[index] = tex_container;
                 }else if (red == 213 && green == 106 && blue == 0) {
                     level[index] = tex_container2;
@@ -57,6 +63,7 @@ public class App
             int render_target_height = window.getHeight();
             float ratio = (float)render_target_width / (float)render_target_height;
 
+            // Input.
             if (window.IsButtonDown(Button.MOVE_UP)) {
                 System.out.println("Forward");
             }
@@ -68,6 +75,10 @@ public class App
                 System.out.println("ACTION!");
             }
 
+            // Physics.
+            rx += 150 * dt;
+
+            // Render.
             glViewport(0, 0, render_target_width, render_target_height);
             glClearColor(0.25f, 0.25f, 0.25f, 1);
             glClearDepth(1.0f);
@@ -86,6 +97,7 @@ public class App
 
             glEnable(GL_LIGHTING);
 
+            // Draw stage tiles.
             for (int y = 0; y < height[0]; y++) {
                 for (int x = 0; x < width[0]; x++) {
                     int tile = level[y*width[0]+x];
@@ -132,13 +144,14 @@ public class App
                 glEnd();
             }
 
-            rx += 150 * dt;
-
-            float ss = 1;
-            glScalef(ss, ss, ss);
-            glRotatef(rx, 0, 1, 0);
-            glBindTexture(GL_TEXTURE_2D, tex_earth);
-            r.DrawSphere(0, 0, 0, 1,1,1,1);
+            // Draw player ball.
+            {
+                float ss = 1;
+                glScalef(ss, ss, ss);
+                glRotatef(rx, 0, 1, 0);
+                glBindTexture(GL_TEXTURE_2D, tex_earth);
+                r.DrawSphere(player[0], player[1], player[2], 1,1,1,1);
+            }
 
             // Orthographic Projection.
             glMatrixMode(GL_PROJECTION);
