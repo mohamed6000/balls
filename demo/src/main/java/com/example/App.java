@@ -57,6 +57,13 @@ public class App
             int render_target_height = window.getHeight();
             float ratio = (float)render_target_width / (float)render_target_height;
 
+            if (window.IsKeyDown('W')) {
+                System.out.println("Forward");
+            }
+            if (window.IsKeyDown('S')) {
+                System.out.println("Backward");
+            }
+
             glViewport(0, 0, render_target_width, render_target_height);
             glClearColor(0.25f, 0.25f, 0.25f, 1);
             glClearDepth(1.0f);

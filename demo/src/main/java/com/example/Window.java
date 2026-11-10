@@ -6,6 +6,7 @@ import org.lwjgl.system.MemoryUtil;
 public class Window {
     private long window_pointer;
     private int width, height;
+    private boolean buttons[];
 
     public Window(int width, int height, String title) {
         if (!glfwInit()) {
@@ -14,6 +15,8 @@ public class Window {
 
         this.width  = width;
         this.height = height;
+
+        buttons = new boolean[256];
 
         glfwDefaultWindowHints();
         glfwWindowHint(GLFW_VISIBLE,   GLFW_FALSE);
@@ -27,6 +30,14 @@ public class Window {
         glfwSetKeyCallback(window_pointer, (window_ptr, key, scancode, action, mods) -> {
             if (key == GLFW_KEY_ESCAPE && action == GLFW_RELEASE) {
                 glfwSetWindowShouldClose(window_ptr, true);
+            }
+
+            if ((key >= 'A') && (key <= 'Z')) {
+                if (action == GLFW_PRESS) {
+                    buttons[key] = true;
+                } else if (action == GLFW_RELEASE) {
+                    buttons[key] = false;
+                }
             }
         });
 
@@ -65,5 +76,9 @@ public class Window {
 
     public int getHeight() {
         return height;
+    }
+
+    public boolean IsKeyDown(int keycode) {
+        return buttons[keycode];
     }
 }
