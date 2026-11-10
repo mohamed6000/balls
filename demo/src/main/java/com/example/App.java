@@ -7,6 +7,9 @@ import org.lwjgl.glfw.GLFW;
 
 public class App 
 {
+    public static float length(float x, float y, float z) {
+        return (float)Math.sqrt(x*x + y*y + z*z);
+    }
     public static void main( String[] args )
     {
         Window window = new Window(640, 480, "Balls");
@@ -15,6 +18,9 @@ public class App
         Renderer r = new Renderer();
         float camera[] = {0, 3, 14};
         float player[] = {0, 0, 0};
+        float player_velocity[] = {0, 0, 0};
+        float player_speed = 10.0f;
+        float player_rotation_speed = 150.0f;
 
         int tex_container  = r.CreateTexture("assets/textures/container.jpg", true, true);
         int tex_container2 = r.CreateTexture("assets/textures/container2.png", true, true);
@@ -64,19 +70,41 @@ public class App
             float ratio = (float)render_target_width / (float)render_target_height;
 
             // Input.
+            player_velocity[0] = 0;
+            player_velocity[1] = 0;
+            player_velocity[2] = 0;
+
+            // Determine the movement vector.
             if (window.IsButtonDown(Button.MOVE_UP)) {
-                System.out.println("Forward");
+                player_velocity[2] = -1;
             }
             if (window.IsButtonDown(Button.MOVE_DOWN)) {
-                System.out.println("Backward");
+                player_velocity[2] = 1;
             }
+            if (window.IsButtonDown(Button.MOVE_LEFT)) {
+                player_velocity[0] = -1;
+            }
+            if (window.IsButtonDown(Button.MOVE_RIGHT)) {
+                player_velocity[0] = 1;
+            }
+            
+            float velocity_length = length(player_velocity[0], player_velocity[1], player_velocity[2]);
+            if (velocity_length != 0) {
+                player_velocity[0] /= velocity_length;
+                player_velocity[1] /= velocity_length;
+                player_velocity[2] /= velocity_length;
+            }
+
+            player[0] += player_velocity[0] * player_speed * dt;
+            player[1] += player_velocity[1] * player_speed * dt;
+            player[2] += player_velocity[2] * player_speed * dt;
 
             if (window.IsButtonPressed(Button.ACTION)) {
                 System.out.println("ACTION!");
             }
 
             // Physics.
-            rx += 150 * dt;
+            rx += player_rotation_speed * dt;
 
             // Render.
             glViewport(0, 0, render_target_width, render_target_height);
