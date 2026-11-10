@@ -32,7 +32,7 @@ public class Window {
                 glfwSetWindowShouldClose(window_ptr, true);
             }
 
-            if ((key >= 'A') && (key <= 'Z')) {
+            if ((key >= GLFW_KEY_A) && (key <= GLFW_KEY_Z)) {
                 if (action == GLFW_PRESS) {
                     buttons[key] = true;
                 } else if (action == GLFW_RELEASE) {
@@ -79,6 +79,7 @@ public class Window {
     }
 
     public boolean IsKeyDown(int keycode) {
+        assert(keycode < buttons.length);
         return buttons[keycode];
     }
 }
