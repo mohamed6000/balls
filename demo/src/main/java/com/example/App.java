@@ -57,10 +57,10 @@ public class App
             int render_target_height = window.getHeight();
             float ratio = (float)render_target_width / (float)render_target_height;
 
-            if (window.IsKeyDown('W')) {
+            if (window.IsButtonDown(Button.MOVE_UP)) {
                 System.out.println("Forward");
             }
-            if (window.IsKeyDown('S')) {
+            if (window.IsButtonDown(Button.MOVE_DOWN)) {
                 System.out.println("Backward");
             }
 

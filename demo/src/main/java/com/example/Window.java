@@ -3,6 +3,16 @@ package com.example;
 import static org.lwjgl.glfw.GLFW.*;
 import org.lwjgl.system.MemoryUtil;
 
+enum Button {
+    UNKNOWN,
+    MOVE_LEFT,
+    MOVE_RIGHT,
+    MOVE_UP,
+    MOVE_DOWN,
+    ACTION,
+    COUNT,
+}
+
 public class Window {
     private long window_pointer;
     private int width, height;
@@ -16,7 +26,7 @@ public class Window {
         this.width  = width;
         this.height = height;
 
-        buttons = new boolean[256];
+        buttons = new boolean[Button.COUNT.ordinal()];
 
         glfwDefaultWindowHints();
         glfwWindowHint(GLFW_VISIBLE,   GLFW_FALSE);
@@ -32,12 +42,24 @@ public class Window {
                 glfwSetWindowShouldClose(window_ptr, true);
             }
 
-            if ((key >= GLFW_KEY_A) && (key <= GLFW_KEY_Z)) {
-                if (action == GLFW_PRESS) {
-                    buttons[key] = true;
-                } else if (action == GLFW_RELEASE) {
-                    buttons[key] = false;
-                }
+            Button button_code = Button.UNKNOWN;
+            if (key == GLFW_KEY_A || key == GLFW_KEY_LEFT) {
+                button_code = Button.MOVE_LEFT;
+            } else if (key == GLFW_KEY_D || key == GLFW_KEY_RIGHT) {
+                button_code = Button.MOVE_RIGHT;
+            } else if (key == GLFW_KEY_W || key == GLFW_KEY_UP) {
+                button_code = Button.MOVE_UP;
+            } else if (key == GLFW_KEY_S || key == GLFW_KEY_DOWN) {
+                button_code = Button.MOVE_DOWN;
+            } else if (key == GLFW_KEY_ENTER) {
+                button_code = Button.ACTION;
+            }
+            int button_index = button_code.ordinal();
+
+            if (action == GLFW_PRESS) {
+                buttons[button_index] = true;
+            } else if (action == GLFW_RELEASE) {
+                buttons[button_index] = false;
             }
         });
 
@@ -78,7 +100,8 @@ public class Window {
         return height;
     }
 
-    public boolean IsKeyDown(int keycode) {
+    public boolean IsButtonDown(Button button) {
+        int keycode = button.ordinal();
         assert(keycode < buttons.length);
         return buttons[keycode];
     }
