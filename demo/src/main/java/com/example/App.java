@@ -80,7 +80,9 @@ public class App
         Renderer r = new Renderer();
 
         double last_pointer_x = 0, last_pointer_y = 0;
-        
+        float pointer_sensitivity = 0.1f;
+        float camera_smoothness = 8.0f;
+
         float camera[] = {0, 0, 0};
         float camera_radius = 7.0f;
         float camera_rotation[] = {0, 0};
@@ -131,7 +133,6 @@ public class App
         }
 
         window.PointerLockAndHide(true);
-
         double last_frame_time = GLFW.glfwGetTime();
         // Loop.
         while (!window.ShouldClose()) {
@@ -144,6 +145,7 @@ public class App
             float ratio = (float)render_target_width / (float)render_target_height;
 
             // Input.
+            System.out.println(window.GetPointerVerticalScroll());
             double pointer_x = window.GetPointerX();
             double pointer_y = window.GetPointerY();
             double delta_x = pointer_x - last_pointer_x;
@@ -151,7 +153,6 @@ public class App
             last_pointer_x = pointer_x;
             last_pointer_y = pointer_y;
 
-            float pointer_sensitivity = 0.1f;
             camera_rotation[0] += -delta_y * pointer_sensitivity;
             camera_rotation[1] +=  delta_x * pointer_sensitivity;
 
@@ -203,13 +204,11 @@ public class App
 
             float position_delta[] = {
                 player_velocity[0] * dt,
-                player_velocity[1] * dt,
+                0,
                 player_velocity[2] * dt,
             };
-            float distance = Length3(position_delta);
             
             player[0] += position_delta[0];
-            player[1] += position_delta[1];
             player[2] += position_delta[2];
 
             // Update camera.
@@ -220,12 +219,12 @@ public class App
                 float target_camera_y = player[1] + camera_radius * (float)Math.sin(-rotation_y);
                 float target_camera_z = player[2] + camera_radius * (float)(cyaw * cy);
 
-                float camera_smoothness = 8.0f;
                 camera[0] += (target_camera_x - camera[0]) * Math.min(1, camera_smoothness * dt);
                 camera[1] += (target_camera_y - camera[1]) * Math.min(1, camera_smoothness * dt);
                 camera[2] += (target_camera_z - camera[2]) * Math.min(1, camera_smoothness * dt);
             }
 
+            float distance = Length3(position_delta);
             if (distance > 0.0001f) {
                 rotation_axis[0] = position_delta[2] / distance;
                 rotation_axis[1] = 0;

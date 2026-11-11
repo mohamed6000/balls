@@ -18,7 +18,7 @@ public class Window {
     private int width, height;
     private boolean buttons[];
     private boolean previous_buttons[];
-    private double pointer_x, pointer_y;
+    private double pointer_x, pointer_y, pointer_scroll;
     private boolean raw_mouse_motion_supported;
 
     public Window(int width, int height, String title) {
@@ -33,6 +33,7 @@ public class Window {
         previous_buttons = new boolean[Button.COUNT.ordinal()];
         pointer_x = 0;
         pointer_y = 0;
+        pointer_scroll = 0;
         raw_mouse_motion_supported = glfwRawMouseMotionSupported();
 
         glfwDefaultWindowHints();
@@ -74,6 +75,11 @@ public class Window {
         glfwSetCursorPosCallback(window_pointer, (window_ptr, x, y) -> {
             pointer_x = x;
             pointer_y = y;
+        });
+
+        glfwSetScrollCallback(window_pointer, (window_ptr, x, y) -> {
+            // We only care about vertical wheel.
+            pointer_scroll = y;
         });
 
         glfwSetWindowSizeCallback(window_pointer, (window_ptr, x, y) -> {
@@ -150,5 +156,9 @@ public class Window {
         } else {
             glfwSetInputMode(window_pointer, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
         }
+    }
+
+    public double GetPointerVerticalScroll() {
+        return pointer_scroll;
     }
 }
