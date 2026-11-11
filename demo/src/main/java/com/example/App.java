@@ -24,7 +24,8 @@ public class App
         float camera[] = {0, 3, 14};
         float player[] = {0, 0, 0};
         float player_velocity[] = {0, 0, 0};
-        float player_speed = 10.0f;
+        float player_friction = 0.25f;
+        float player_speed = 20.0f;
         float player_rotation_speed = 150.0f;
 
         int tex_container  = r.CreateTexture("assets/textures/container.jpg", true, true);
@@ -75,34 +76,41 @@ public class App
             float ratio = (float)render_target_width / (float)render_target_height;
 
             // Input.
-            player_velocity[0] = 0;
-            player_velocity[1] = 0;
-            player_velocity[2] = 0;
-
+            float input_vector[] = {0, 0, 0};
             // Determine the movement vector.
             if (window.IsButtonDown(Button.MOVE_UP)) {
-                player_velocity[2] = -1;
+                input_vector[2] = -1;
             }
             if (window.IsButtonDown(Button.MOVE_DOWN)) {
-                player_velocity[2] = 1;
+                input_vector[2] = 1;
             }
             if (window.IsButtonDown(Button.MOVE_LEFT)) {
-                player_velocity[0] = -1;
+                input_vector[0] = -1;
             }
             if (window.IsButtonDown(Button.MOVE_RIGHT)) {
-                player_velocity[0] = 1;
+                input_vector[0] = 1;
             }
             
-            float input_length = Length3(player_velocity);
+            float input_length = Length3(input_vector);
             if (input_length != 0) {
-                player_velocity[0] /= input_length;
-                player_velocity[1] /= input_length;
-                player_velocity[2] /= input_length;
+                input_vector[0] /= input_length;
+                input_vector[1] /= input_length;
+                input_vector[2] /= input_length;
             }
 
-            player[0] += player_velocity[0] * player_speed * dt;
-            player[1] += player_velocity[1] * player_speed * dt;
-            player[2] += player_velocity[2] * player_speed * dt;
+            // Apply acceleration to velocity.
+            player_velocity[0] += input_vector[0] * player_speed * dt;
+            player_velocity[1] += input_vector[1] * player_speed * dt;
+            player_velocity[2] += input_vector[2] * player_speed * dt;
+
+            // Apply friction to velocity.
+            player_velocity[0] *= (float)Math.pow(player_friction, dt);
+            player_velocity[1] *= (float)Math.pow(player_friction, dt);
+            player_velocity[2] *= (float)Math.pow(player_friction, dt);
+
+            player[0] += player_velocity[0] * dt;
+            player[1] += player_velocity[1] * dt;
+            player[2] += player_velocity[2] * dt;
 
             if (window.IsButtonPressed(Button.ACTION)) {
                 System.out.println("ACTION!");
