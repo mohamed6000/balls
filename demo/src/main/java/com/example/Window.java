@@ -19,6 +19,7 @@ public class Window {
     private boolean buttons[];
     private boolean previous_buttons[];
     private double pointer_x, pointer_y;
+    private boolean raw_mouse_motion_supported;
 
     public Window(int width, int height, String title) {
         if (!glfwInit()) {
@@ -32,6 +33,7 @@ public class Window {
         previous_buttons = new boolean[Button.COUNT.ordinal()];
         pointer_x = 0;
         pointer_y = 0;
+        raw_mouse_motion_supported = glfwRawMouseMotionSupported();
 
         glfwDefaultWindowHints();
         glfwWindowHint(GLFW_VISIBLE,   GLFW_FALSE);
@@ -137,5 +139,16 @@ public class Window {
     public void GetPointerCoordinates(double out[]) {
         out[0] = pointer_x;
         out[1] = pointer_y;
+    }
+
+    public void PointerLockAndHide(boolean lock) {
+        if (lock) {
+            glfwSetInputMode(window_pointer, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+            if (raw_mouse_motion_supported) {
+                glfwSetInputMode(window_pointer, GLFW_RAW_MOUSE_MOTION, GLFW_TRUE);
+            }
+        } else {
+            glfwSetInputMode(window_pointer, GLFW_CURSOR, GLFW_CURSOR_NORMAL);
+        }
     }
 }
