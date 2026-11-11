@@ -214,12 +214,11 @@ public class App
 
             // Update camera.
             {
-                float rotation_x = (float)Math.toRadians(camera_rotation[1]);
                 float rotation_y = (float)Math.toRadians(camera_rotation[0]);
                 float cy = (float)Math.cos(rotation_y);
-                float target_camera_x = player[0] + camera_radius * (float)(Math.sin(rotation_x) * cy);
+                float target_camera_x = player[0] + camera_radius * (float)(syaw * cy);
                 float target_camera_y = player[1] + camera_radius * (float)Math.sin(-rotation_y);
-                float target_camera_z = player[2] + camera_radius * (float)(Math.cos(rotation_x) * cy);
+                float target_camera_z = player[2] + camera_radius * (float)(cyaw * cy);
 
                 float camera_smoothness = 8.0f;
                 camera[0] += (target_camera_x - camera[0]) * Math.min(1, camera_smoothness * dt);
