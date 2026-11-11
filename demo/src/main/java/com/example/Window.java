@@ -18,6 +18,7 @@ public class Window {
     private int width, height;
     private boolean buttons[];
     private boolean previous_buttons[];
+    private double pointer_x, pointer_y;
 
     public Window(int width, int height, String title) {
         if (!glfwInit()) {
@@ -29,6 +30,8 @@ public class Window {
 
         buttons = new boolean[Button.COUNT.ordinal()];
         previous_buttons = new boolean[Button.COUNT.ordinal()];
+        pointer_x = 0;
+        pointer_y = 0;
 
         glfwDefaultWindowHints();
         glfwWindowHint(GLFW_VISIBLE,   GLFW_FALSE);
@@ -64,6 +67,11 @@ public class Window {
             } else if (action == GLFW_RELEASE) {
                 buttons[button_index] = false;
             }
+        });
+
+        glfwSetCursorPosCallback(window_pointer, (window_ptr, x, y) -> {
+            pointer_x = x;
+            pointer_y = y;
         });
 
         glfwSetWindowSizeCallback(window_pointer, (window_ptr, x, y) -> {
@@ -116,5 +124,18 @@ public class Window {
         boolean was_down = previous_buttons[keycode];
         boolean is_down = buttons[keycode];
         return is_down && !was_down;
+    }
+
+    public double GetPointerX() {
+        return pointer_x;
+    }
+
+    public double GetPointerY() {
+        return pointer_y;
+    }
+
+    public void GetPointerCoordinates(double out[]) {
+        out[0] = pointer_x;
+        out[1] = pointer_y;
     }
 }
