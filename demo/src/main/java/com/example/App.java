@@ -7,9 +7,14 @@ import org.lwjgl.glfw.GLFW;
 
 public class App 
 {
-    public static float length(float x, float y, float z) {
-        return (float)Math.sqrt(x*x + y*y + z*z);
+    public static float Length3(float v[]) {
+        return (float)Math.sqrt(v[0]*v[0] + v[1]*v[1] + v[2]*v[2]);
     }
+
+    public static float LengthSquared3(float v[]) {
+        return v[0]*v[0] + v[1]*v[1] + v[2]*v[2];
+    }
+
     public static void main( String[] args )
     {
         Window window = new Window(640, 480, "Balls");
@@ -88,11 +93,11 @@ public class App
                 player_velocity[0] = 1;
             }
             
-            float velocity_length = length(player_velocity[0], player_velocity[1], player_velocity[2]);
-            if (velocity_length != 0) {
-                player_velocity[0] /= velocity_length;
-                player_velocity[1] /= velocity_length;
-                player_velocity[2] /= velocity_length;
+            float input_length = Length3(player_velocity);
+            if (input_length != 0) {
+                player_velocity[0] /= input_length;
+                player_velocity[1] /= input_length;
+                player_velocity[2] /= input_length;
             }
 
             player[0] += player_velocity[0] * player_speed * dt;
