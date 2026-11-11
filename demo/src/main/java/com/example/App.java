@@ -145,9 +145,9 @@ public class App
             float ratio = (float)render_target_width / (float)render_target_height;
 
             // Input.
-            System.out.println(window.GetPointerVerticalScroll());
             double pointer_x = window.GetPointerX();
             double pointer_y = window.GetPointerY();
+            float pointer_scroll = (float)window.GetPointerVerticalScroll();
             double delta_x = pointer_x - last_pointer_x;
             double delta_y = pointer_y - last_pointer_y;
             last_pointer_x = pointer_x;
@@ -155,6 +155,9 @@ public class App
 
             camera_rotation[0] += -delta_y * pointer_sensitivity;
             camera_rotation[1] +=  delta_x * pointer_sensitivity;
+            camera_radius += pointer_scroll;
+            if (camera_radius > 18.0f) camera_radius = 18.0f;
+            if (camera_radius <  3.0f) camera_radius = 3.0f;
 
             if (camera_rotation[0] < -89.0f) camera_rotation[0] = -89.0f;
             if (camera_rotation[0] >  89.0f) camera_rotation[0] =  89.0f;
