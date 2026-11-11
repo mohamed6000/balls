@@ -84,6 +84,8 @@ public class App
         float camera[] = {0, 0, 0};
         float camera_radius = 7.0f;
         float camera_rotation[] = {0, 0};
+        float camera_forward[] = {0, 0, 0};
+        float camera_right[] = {0, 0, 0};
 
         float player[] = {0, 0, 0};
         float player_orientation[] = {0, 0, 0, 1};
@@ -174,18 +176,29 @@ public class App
             float input_length = Length3(input_vector);
             if (input_length != 0) {
                 input_vector[0] /= input_length;
-                input_vector[1] /= input_length;
                 input_vector[2] /= input_length;
             }
 
+            // Get camera forward and right vectors.
+            float yaw = (float)Math.toRadians(camera_rotation[1]);
+            float cyaw = (float)Math.cos(yaw);
+            float syaw = (float)Math.sin(yaw);
+
+            camera_forward[0] = syaw;
+            camera_forward[2] = cyaw;
+            camera_right[0]   = cyaw;
+            camera_right[2]   = -syaw;
+
+            // Local input to world input transform.
+            float world_input_x = input_vector[0] * camera_right[0] + input_vector[2] * camera_forward[0];
+            float world_input_z = input_vector[0] * camera_right[2] + input_vector[2] * camera_forward[2];
+
             // Apply acceleration to velocity.
-            player_velocity[0] += input_vector[0] * player_speed * dt;
-            player_velocity[1] += input_vector[1] * player_speed * dt;
-            player_velocity[2] += input_vector[2] * player_speed * dt;
+            player_velocity[0] += world_input_x * player_speed * dt;
+            player_velocity[2] += world_input_z * player_speed * dt;
 
             // Apply friction to velocity.
             player_velocity[0] *= (float)Math.pow(player_friction, dt);
-            player_velocity[1] *= (float)Math.pow(player_friction, dt);
             player_velocity[2] *= (float)Math.pow(player_friction, dt);
 
             float position_delta[] = {
