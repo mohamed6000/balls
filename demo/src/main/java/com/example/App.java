@@ -152,8 +152,8 @@ public class App
             last_pointer_y = pointer_y;
 
             float pointer_sensitivity = 0.1f;
-            camera_rotation[0] += delta_y * pointer_sensitivity;
-            camera_rotation[1] += delta_x * pointer_sensitivity;
+            camera_rotation[0] += -delta_y * pointer_sensitivity;
+            camera_rotation[1] +=  delta_x * pointer_sensitivity;
 
             if (camera_rotation[0] < -89.0f) camera_rotation[0] = -89.0f;
             if (camera_rotation[0] >  89.0f) camera_rotation[0] =  89.0f;
