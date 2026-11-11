@@ -15,6 +15,65 @@ public class App
         return v[0]*v[0] + v[1]*v[1] + v[2]*v[2];
     }
 
+    public static void CrossProduct3(float a[], float b[], float out[]) {
+        out[0] = a[1]*b[2] - a[2]*b[1];
+        out[1] = a[2]*b[0] - a[0]*b[2];
+        out[2] = a[0]*b[1] - a[1]*b[0];
+    }
+
+    public static void QuaternionFromAxisAngle(float axis[], float angle, float out[]) {
+        float ca, sa;
+        ca = (float)Math.cos(angle * 0.5f);
+        sa = (float)Math.sin(angle * 0.5f);
+        out[0] = axis[0] * sa;
+        out[1] = axis[1] * sa;
+        out[2] = axis[2] * sa;
+        out[3] = ca;
+    }
+
+    public static void QuaternionMultiply(float q1[], float q2[], float out[]) {
+        out[0] = q1[3] * q2[0] + q1[0] * q2[3] + q1[1] * q2[2] - q1[2] * q2[1];
+        out[1] = q1[3] * q2[1] - q1[0] * q2[2] + q1[1] * q2[3] + q1[2] * q2[0];
+        out[2] = q1[3] * q2[2] + q1[0] * q2[1] - q1[1] * q2[0] + q1[2] * q2[3];
+        out[3] = q1[3] * q2[3] - q1[0] * q2[0] - q1[1] * q2[1] - q1[2] * q2[2];
+    }
+
+    public static float QuaternionNormalizeOrIdentity(float q[]) {
+        float sq, factor;
+        sq = (float)Math.sqrt(q[0]*q[0] + q[1]*q[1] + q[2]*q[2] + q[3]*q[3]);
+        if (sq == 0) {
+            q[0] = 0;
+            q[1] = 0;
+            q[2] = 0;
+            q[3] = 1;
+            return sq;
+        }
+        factor = 1.0f / sq;
+        q[0] *= factor;
+        q[1] *= factor;
+        q[2] *= factor;
+        q[3] *= factor;
+        return sq;
+    }
+
+    public static float QuaternionToAxisAngle(float q[], float axis[]) {
+        float w, s;
+        w = q[3];
+        if (w > 1.0f)  w = 1.0f;
+        if (w < -1.0f) w = -1.0f;
+
+        s = (float)Math.sqrt(1.0f - w*w);
+        if (s < 0.0001f) {
+            axis[0] = 1; axis[1] = 0; axis[2] = 0;
+        } else {
+            axis[0] = q[0] / s; 
+            axis[1] = q[1] / s; 
+            axis[2] = q[2] / s;
+        }
+
+        return (float)Math.acos(w) * 2.0f;
+    }
+
     public static void main( String[] args )
     {
         Window window = new Window(640, 480, "Balls");
@@ -23,17 +82,17 @@ public class App
         Renderer r = new Renderer();
         float camera[] = {0, 3, 14};
         float player[] = {0, 0, 0};
+        float player_orientation[] = {0, 0, 0, 1};
         float player_velocity[] = {0, 0, 0};
         float player_friction = 0.25f;
         float player_speed = 20.0f;
-        float player_rotation_speed = 150.0f;
+        float ball_radius = 0.5f;
+        float rotation_axis[] = {0, 0, 0};
 
         int tex_container  = r.CreateTexture("assets/textures/container.jpg", true, true);
         int tex_container2 = r.CreateTexture("assets/textures/container2.png", true, true);
         int tex_earth      = r.CreateTexture("assets/textures/earth.png", true, true);
         int tex_grass      = r.CreateTexture("assets/textures/texGrass.png", true, true);
-
-        float rx = 0;
 
         // Level.
         int width[] = new int[1];
@@ -108,16 +167,32 @@ public class App
             player_velocity[1] *= (float)Math.pow(player_friction, dt);
             player_velocity[2] *= (float)Math.pow(player_friction, dt);
 
-            player[0] += player_velocity[0] * dt;
-            player[1] += player_velocity[1] * dt;
-            player[2] += player_velocity[2] * dt;
+            float position_delta[] = {
+                player_velocity[0] * dt,
+                player_velocity[1] * dt,
+                player_velocity[2] * dt,
+            };
+            float distance = Length3(position_delta);
+            
+            player[0] += position_delta[0];
+            player[1] += position_delta[1];
+            player[2] += position_delta[2];
 
-            if (window.IsButtonPressed(Button.ACTION)) {
-                System.out.println("ACTION!");
+            if (distance > 0.0001f) {
+                // float ground_normal[] = {0, 1, 0};
+                // CrossProduct3(ground_normal, player_velocity, rotation_axis);
+                rotation_axis[0] = position_delta[2] / distance;
+                rotation_axis[1] = 0;
+                rotation_axis[2] = -position_delta[0] / distance;
+
+                float angle = distance / ball_radius;
+                float delta_rotation[] = {0, 0, 0, 1};
+                QuaternionFromAxisAngle(rotation_axis, angle, delta_rotation);
+
+                float q[] = player_orientation;
+                QuaternionMultiply(delta_rotation, q, player_orientation);
+                QuaternionNormalizeOrIdentity(player_orientation);
             }
-
-            // Physics.
-            rx += player_rotation_speed * dt;
 
             // Render.
             glViewport(0, 0, render_target_width, render_target_height);
@@ -139,12 +214,13 @@ public class App
             glEnable(GL_LIGHTING);
 
             // Draw stage tiles.
+            float half_cube_size = 0.5f;
             for (int y = 0; y < height[0]; y++) {
                 for (int x = 0; x < width[0]; x++) {
                     int tile = level[y*width[0]+x];
                     if (tile != 0) {
                         glBindTexture(GL_TEXTURE_2D, tile);
-                        r.DrawCube(x, 0, y, 0.5f, 1,1,1,1);
+                        r.DrawCube(x, half_cube_size, y, half_cube_size, 1,1,1,1);
                     }
                 }
             }
@@ -155,7 +231,7 @@ public class App
                 float z0 = -height[0] * 0.5f;
                 float x1 = +width[0]  * 0.5f;
                 float z1 = +height[0] * 0.5f;
-                float y = -0.5f;
+                float y = 0;
                 glBindTexture(GL_TEXTURE_2D, tex_grass);
                 glColor4f(1,1,1,1);
                 glBegin(GL_TRIANGLES);
@@ -187,10 +263,15 @@ public class App
 
             // Draw player ball.
             {
-                float ss = 1;
-                glTranslatef(player[0], player[1], player[2]);
-                glRotatef(rx, 0, 1, 0);
-                glScalef(ss, ss, ss);
+                float scale = ball_radius * 2.0f;
+                float angle;
+                float axis[] = {1, 0, 0};
+
+                angle = QuaternionToAxisAngle(player_orientation, axis);
+
+                glTranslatef(player[0], player[1]+ball_radius, player[2]);
+                glRotatef((float)Math.toDegrees(angle), axis[0], axis[1], axis[2]);
+                glScalef(scale, scale, scale);
                 glBindTexture(GL_TEXTURE_2D, tex_earth);
                 r.DrawSphere(0, 0, 0, 1,1,1,1);
             }
