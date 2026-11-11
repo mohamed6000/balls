@@ -77,10 +77,14 @@ public class App
     public static void main( String[] args )
     {
         Window window = new Window(640, 480, "Balls");
-        double last_frame_time = 0;
-
         Renderer r = new Renderer();
-        float camera[] = {0, 3, 14};
+
+        double last_pointer_x = 0, last_pointer_y = 0;
+        
+        float camera[] = {0, 0, 0};
+        float camera_radius = 7.0f;
+        float camera_rotation[] = {0, 0};
+
         float player[] = {0, 0, 0};
         float player_orientation[] = {0, 0, 0, 1};
         float player_velocity[] = {0, 0, 0};
@@ -124,6 +128,9 @@ public class App
             stbi_image_free(data);
         }
 
+        window.PointerLockAndHide(true);
+
+        double last_frame_time = GLFW.glfwGetTime();
         // Loop.
         while (!window.ShouldClose()) {
             double current_time = GLFW.glfwGetTime();
@@ -135,6 +142,20 @@ public class App
             float ratio = (float)render_target_width / (float)render_target_height;
 
             // Input.
+            double pointer_x = window.GetPointerX();
+            double pointer_y = window.GetPointerY();
+            double delta_x = pointer_x - last_pointer_x;
+            double delta_y = pointer_y - last_pointer_y;
+            last_pointer_x = pointer_x;
+            last_pointer_y = pointer_y;
+
+            float pointer_sensitivity = 0.1f;
+            camera_rotation[0] += delta_y * pointer_sensitivity;
+            camera_rotation[1] += delta_x * pointer_sensitivity;
+
+            if (camera_rotation[0] < -89.0f) camera_rotation[0] = -89.0f;
+            if (camera_rotation[0] >  89.0f) camera_rotation[0] =  89.0f;
+
             float input_vector[] = {0, 0, 0};
             // Determine the movement vector.
             if (window.IsButtonDown(Button.MOVE_UP)) {
@@ -178,9 +199,22 @@ public class App
             player[1] += position_delta[1];
             player[2] += position_delta[2];
 
+            // Update camera.
+            {
+                float rotation_x = (float)Math.toRadians(camera_rotation[1]);
+                float rotation_y = (float)Math.toRadians(camera_rotation[0]);
+                float cy = (float)Math.cos(rotation_y);
+                float target_camera_x = player[0] + camera_radius * (float)(Math.sin(rotation_x) * cy);
+                float target_camera_y = player[1] + camera_radius * (float)Math.sin(-rotation_y);
+                float target_camera_z = player[2] + camera_radius * (float)(Math.cos(rotation_x) * cy);
+
+                float camera_smoothness = 8.0f;
+                camera[0] += (target_camera_x - camera[0]) * Math.min(1, camera_smoothness * dt);
+                camera[1] += (target_camera_y - camera[1]) * Math.min(1, camera_smoothness * dt);
+                camera[2] += (target_camera_z - camera[2]) * Math.min(1, camera_smoothness * dt);
+            }
+
             if (distance > 0.0001f) {
-                // float ground_normal[] = {0, 1, 0};
-                // CrossProduct3(ground_normal, player_velocity, rotation_axis);
                 rotation_axis[0] = position_delta[2] / distance;
                 rotation_axis[1] = 0;
                 rotation_axis[2] = -position_delta[0] / distance;
@@ -209,6 +243,8 @@ public class App
             glMatrixMode(GL_MODELVIEW);
             glLoadIdentity();
 
+            glRotatef(-camera_rotation[0], 1, 0, 0);
+            glRotatef(-camera_rotation[1], 0, 1, 0);
             glTranslatef(-camera[0], -camera[1], -camera[2]);
 
             glEnable(GL_LIGHTING);
