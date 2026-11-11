@@ -105,6 +105,7 @@ public class Window {
 
     public void UpdateEvents() {
         System.arraycopy(buttons, 0, previous_buttons, 0, buttons.length);
+        pointer_scroll = 0;
         glfwPollEvents();
     }
 
