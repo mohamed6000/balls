@@ -275,35 +275,39 @@ public class App
 
             // Floor.
             {
-                float x0 = -width[0]  * 0.5f;
-                float z0 = -height[0] * 0.5f;
-                float x1 = +width[0]  * 0.5f;
-                float z1 = +height[0] * 0.5f;
+                float x0 = -width[0];
+                float z0 = -height[0];
+                float x1 = +width[0];
+                float z1 = +height[0];
                 float y = 0;
+                float u0 = 0;
+                float v0 = 0;
+                float u1 = 2;
+                float v1 = 2;
                 glBindTexture(GL_TEXTURE_2D, tex_grass);
                 glColor4f(1,1,1,1);
                 glBegin(GL_TRIANGLES);
-                glTexCoord2f(0,0);
+                glTexCoord2f(u0,v0);
                 glNormal3f(0, 1, 0);
                 glVertex3f(x0, y, z0);
 
-                glTexCoord2f(1,0);
+                glTexCoord2f(u1,v0);
                 glNormal3f(0, 1, 0);
                 glVertex3f(x1, y, z0);
 
-                glTexCoord2f(1,1);
+                glTexCoord2f(u1,v1);
                 glNormal3f(0, 1, 0);
                 glVertex3f(x1, y, z1);
 
-                glTexCoord2f(0,0);
+                glTexCoord2f(u0,v0);
                 glNormal3f(0, 1, 0);
                 glVertex3f(x0, y, z0);
 
-                glTexCoord2f(1,1);
+                glTexCoord2f(u1,v1);
                 glNormal3f(0, 1, 0);
                 glVertex3f(x1, y, z1);
 
-                glTexCoord2f(0,1);
+                glTexCoord2f(u0,v1);
                 glNormal3f(0, 1, 0);
                 glVertex3f(x0, y, z1);
                 glEnd();
