@@ -155,7 +155,7 @@ public class App
 
             camera_rotation[0] += -delta_y * pointer_sensitivity;
             camera_rotation[1] += -delta_x * pointer_sensitivity;
-            camera_radius += pointer_scroll;
+            camera_radius += -pointer_scroll;
             if (camera_radius > 18.0f) camera_radius = 18.0f;
             if (camera_radius <  3.0f) camera_radius = 3.0f;
 
