@@ -74,6 +74,34 @@ public class App
         return (float)Math.acos(w) * 2.0f;
     }
 
+    public static boolean CheckCollision(float px, float pz, float radius, 
+                                         int map[], int map_width, int map_height) {
+        int left   = (int)Math.floor(px - radius - 0.5f);
+        int right  = (int)Math.floor(px + radius + 0.5f);
+        int top    = (int)Math.floor(pz - radius - 0.5f);
+        int bottom = (int)Math.floor(pz + radius + 0.5f);
+
+        left   = Math.max(left, 0);
+        right  = Math.min(right, map_width-1);
+        top    = Math.max(top, 0);
+        bottom = Math.min(bottom, map_height-1);
+
+        for (int z = top; z <= bottom; z++) {
+            for (int x = left; x <= right; x++) {
+                if (map[z * map_width + x] != 0) {
+                    float closest_x = Math.max(x-0.5f, Math.min(px, x+0.5f));
+                    float closest_z = Math.max(z-0.5f, Math.min(pz, z+0.5f));
+                    float dist_x = px - closest_x;
+                    float dist_z = pz - closest_z;
+                    if ((dist_x*dist_x + dist_z*dist_z) < (radius*radius)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
+    }
+
     public static void main( String[] args )
     {
         Window window = new Window(640, 480, "Balls");
@@ -94,7 +122,7 @@ public class App
         float player_velocity[] = {0, 0, 0};
         float player_friction = 0.25f;
         float player_speed = 20.0f;
-        float ball_radius = 0.5f;
+        float ball_radius = 0.42f;
         float rotation_axis[] = {0, 0, 0};
 
         int tex_container  = r.CreateTexture("assets/textures/container.jpg", true, true);
@@ -205,14 +233,26 @@ public class App
             player_velocity[0] *= (float)Math.pow(player_friction, dt);
             player_velocity[2] *= (float)Math.pow(player_friction, dt);
 
+            float delta_px = player_velocity[0] * dt;
+            float delta_pz = player_velocity[2] * dt;
+
+            player[0] += delta_px;
+            if (CheckCollision(player[0], player[2], ball_radius, level, width[0], height[0])) {
+                player[0] -= delta_px;
+                player_velocity[0] = 0;
+            }
+
+            player[2] += delta_pz;
+            if (CheckCollision(player[0], player[2], ball_radius, level, width[0], height[0])) {
+                player[2] -= delta_pz;
+                player_velocity[2] = 0;
+            }
+
             float position_delta[] = {
                 player_velocity[0] * dt,
                 0,
                 player_velocity[2] * dt,
             };
-            
-            player[0] += position_delta[0];
-            player[2] += position_delta[2];
 
             // Update camera.
             {
