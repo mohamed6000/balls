@@ -69,20 +69,22 @@ public class MathHelper {
     }
 
     public static boolean CheckCollision(float px, float pz, float radius, 
-                                         int map[], int map_width, int map_height) {
+                                         Level level) {
         int left   = (int)Math.floor(px - radius - 0.5f);
         int right  = (int)Math.floor(px + radius + 0.5f);
         int top    = (int)Math.floor(pz - radius - 0.5f);
         int bottom = (int)Math.floor(pz + radius + 0.5f);
 
         left   = Math.max(left, 0);
-        right  = Math.min(right, map_width-1);
+        right  = Math.min(right, level.getWidth()-1);
         top    = Math.max(top, 0);
-        bottom = Math.min(bottom, map_height-1);
-
+        bottom = Math.min(bottom, level.getHeight()-1);
+        
+        int level_data[] = level.getMap();
         for (int z = top; z <= bottom; z++) {
             for (int x = left; x <= right; x++) {
-                if (map[z * map_width + x] != 0) {
+                int tile = level_data[z * level.getWidth() + x];
+                if (tile != 0) {
                     float closest_x = Math.max(x-0.5f, Math.min(px, x+0.5f));
                     float closest_z = Math.max(z-0.5f, Math.min(pz, z+0.5f));
                     float dist_x = px - closest_x;

@@ -1,8 +1,6 @@
 package com.example;
 
 import static org.lwjgl.opengl.GL11.*;
-import static org.lwjgl.stb.STBImage.*;
-import java.nio.ByteBuffer;
 import org.lwjgl.glfw.GLFW;
 
 import static com.example.MathHelper.*;
@@ -37,35 +35,19 @@ public class App
         int tex_earth      = r.CreateTexture("assets/textures/earth.png", true, true);
         int tex_grass      = r.CreateTexture("assets/textures/texGrass.png", true, true);
 
-        // Level.
-        int width[] = new int[1];
-        int height[] = new int[1];
-        int channels[] = new int[1];
-        ByteBuffer data = stbi_load("assets/levels/test.bmp", width, height, channels, 4);
-        int level[] = null;
-        if (data != null) {
-            level = new int[height[0]*width[0]];
-            int total_bytes = width[0] * height[0] * 4;
-            for (int i = 0; i < total_bytes; i += 4) {
-                int red   = data.get(i)   & 0xFF;
-                int green = data.get(i+1) & 0xFF;
-                int blue  = data.get(i+2) & 0xFF;
+        int texture_ids[] = {
+            tex_container,
+            tex_container2,
+            tex_earth,
+            tex_grass,
+        };
 
-                int index = i / 4;
-                if (red == 0 && green == 0 && blue == 0) {
-                    // Player ball position.
-                    player[0] = (float)(index % width[0]);  // X
-                    player[2] = (float)(index / width[0]);  // Z
-                } else if (red == 128 && green == 64 && blue == 0) {
-                    level[index] = tex_container;
-                }else if (red == 213 && green == 106 && blue == 0) {
-                    level[index] = tex_container2;
-                } else {
-                    level[index] = 0;
-                }
-            }
-            stbi_image_free(data);
-        }
+        // Level.
+        Level level = new Level();
+        level.LoadFromFile("assets/levels/test.bmp", player, texture_ids);
+        int level_width  = level.getWidth();
+        int level_height = level.getHeight();
+        int level_data[] = level.getMap();
 
         window.PointerLockAndHide(true);
         double last_frame_time = GLFW.glfwGetTime();
@@ -144,13 +126,13 @@ public class App
             float delta_pz = player_velocity[2] * dt;
 
             player[0] += delta_px;
-            if (CheckCollision(player[0], player[2], ball_radius, level, width[0], height[0])) {
+            if (CheckCollision(player[0], player[2], ball_radius, level)) {
                 player[0] -= delta_px;
                 player_velocity[0] = 0;
             }
 
             player[2] += delta_pz;
-            if (CheckCollision(player[0], player[2], ball_radius, level, width[0], height[0])) {
+            if (CheckCollision(player[0], player[2], ball_radius, level)) {
                 player[2] -= delta_pz;
                 player_velocity[2] = 0;
             }
@@ -212,9 +194,9 @@ public class App
 
             // Draw stage tiles.
             float half_cube_size = 0.5f;
-            for (int y = 0; y < height[0]; y++) {
-                for (int x = 0; x < width[0]; x++) {
-                    int tile = level[y*width[0]+x];
+            for (int y = 0; y < level_height; y++) {
+                for (int x = 0; x < level_width; x++) {
+                    int tile = level_data[y*level_width+x];
                     if (tile != 0) {
                         glBindTexture(GL_TEXTURE_2D, tile);
                         r.DrawCube(x, half_cube_size, y, half_cube_size, 1,1,1,1);
@@ -224,10 +206,10 @@ public class App
 
             // Floor.
             {
-                float x0 = -width[0];
-                float z0 = -height[0];
-                float x1 = +width[0];
-                float z1 = +height[0];
+                float x0 = -level_width;
+                float z0 = -level_height;
+                float x1 = +level_width;
+                float z1 = +level_height;
                 float y = 0;
                 float u0 = 0;
                 float v0 = 0;
