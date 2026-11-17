@@ -1,5 +1,6 @@
 package com.example;
 
+import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL;
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.stb.STBImage.*;
@@ -270,6 +271,64 @@ public class Renderer {
         }
     }
 
+    private static int pack_argb(ByteBuffer data, int x, int y, int width) {
+        int index = (y * width + x) * 4;
+        int r = data.get(index+0) & 0xFF;
+        int g = data.get(index+1) & 0xFF;
+        int b = data.get(index+2) & 0xFF;
+        int a = data.get(index+3) & 0xFF;
+        return (a << 24) | (r << 16) | (g << 8) | b;
+    }
+
+    public void Build2DMipmaps(int target, int internal_format, int width, int height, int format, int type, ByteBuffer data) {
+        int current_width  = width;
+        int current_height = height;
+        int level = 0;
+        ByteBuffer current_data = data;
+        while (true) {
+            glTexImage2D(target, level, internal_format, current_width, current_height, 0, format, type, current_data);
+            if ((current_width == 1) && (current_height == 1)) break;
+
+            int new_width  = Math.max(1, current_width/2);
+            int new_height = Math.max(1, current_height/2);
+            // We enforce loading RGBA textures.
+            ByteBuffer new_data = BufferUtils.createByteBuffer(new_width*new_height*4);
+
+            current_data.rewind();
+            for (int y = 0; y < new_height; y++) {
+                for (int x = 0; x < new_width; x++) {
+                    int x0 = Math.min(x*2,     current_width-1);
+                    int x1 = Math.min(x*2 + 1, current_width-1);
+                    int y0 = Math.min(y*2,     current_height-1);
+                    int y1 = Math.min(y*2 + 1, current_height-1);
+
+                    // Sample pixels.
+                    int p00 = pack_argb(current_data, x0, y0, current_width);
+                    int p10 = pack_argb(current_data, x1, y0, current_width);
+                    int p11 = pack_argb(current_data, x1, y1, current_width);
+                    int p01 = pack_argb(current_data, x0, y1, current_width);
+
+                    // Average 4 pixels channels.
+                    byte r = (byte)((((p00 >> 16) & 0xFF) + ((p10 >> 16) & 0xFF) + ((p01 >> 16) & 0xFF) + ((p11 >> 16) & 0xFF)) / 4);
+                    byte g = (byte)((((p00 >> 8) & 0xFF) + ((p10 >> 8) & 0xFF) + ((p01 >> 8) & 0xFF) + ((p11 >> 8) & 0xFF)) / 4);
+                    byte b = (byte)((((p00) & 0xFF) + ((p10) & 0xFF) + ((p01) & 0xFF) + ((p11) & 0xFF)) / 4);
+                    byte a = (byte)(((p00 >>> 24) + (p10 >>> 24) + (p01 >>> 24) + (p11 >>> 24)) / 4);
+
+                    new_data.put(r);
+                    new_data.put(g);
+                    new_data.put(b);
+                    new_data.put(a);
+                }
+            }
+            new_data.flip();
+
+            current_data   = new_data;
+            current_width  = new_width;
+            current_height = new_height;
+            level++;
+        }
+    }
+
     public int CreateTexture(String filename, boolean filter, boolean wrap) {
         int width[], height[], channels[], gl_filter, gl_wrap, texture_id;
         ByteBuffer data;
@@ -281,21 +340,21 @@ public class Renderer {
         if (data != null) {
             texture_id = glGenTextures();
             glBindTexture(GL_TEXTURE_2D, texture_id);
-
             glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 
             // Set texture filters.
             gl_filter = filter ? GL_LINEAR : GL_NEAREST;
-            glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gl_filter);
-            glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, gl_filter);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, filter ? GL_LINEAR_MIPMAP_LINEAR : gl_filter);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, gl_filter);
         
             // Set texture wrapping.
             gl_wrap = wrap ? GL_REPEAT : GL_CLAMP;
-            glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, gl_wrap);
-            glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, gl_wrap);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, gl_wrap);
+            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, gl_wrap);
 
-                glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width[0], height[0], 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-                stbi_image_free(data);
+            // glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width[0], height[0], 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+            Build2DMipmaps(GL_TEXTURE_2D, GL_RGBA, width[0], height[0], GL_RGBA, GL_UNSIGNED_BYTE, data);
+            stbi_image_free(data);
         } else {
             texture_id = 0;
             System.out.println("Failed to load bitmap: " + filename);

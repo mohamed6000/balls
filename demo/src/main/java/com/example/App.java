@@ -296,15 +296,30 @@ public class App
                             float z1 = z + step;
                             float y = 0;
 
-                            // Triangle 1
-                            glTexCoord2f(0, 0); glNormal3f(0, 1, 0); glVertex3f(x0, y, z0);
-                            glTexCoord2f(1, 0); glNormal3f(0, 1, 0); glVertex3f(x1, y, z0);
-                            glTexCoord2f(1, 1); glNormal3f(0, 1, 0); glVertex3f(x1, y, z1);
+                            glTexCoord2f(0,0);
+                            glNormal3f(0,1,0);
+                            glVertex3f(x0, y, z0);
 
-                            // Triangle 2
-                            glTexCoord2f(0, 0); glNormal3f(0, 1, 0); glVertex3f(x0, y, z0);
-                            glTexCoord2f(1, 1); glNormal3f(0, 1, 0); glVertex3f(x1, y, z1);
-                            glTexCoord2f(0, 1); glNormal3f(0, 1, 0); glVertex3f(x0, y, z1);
+                            glTexCoord2f(1,0);
+                            glNormal3f(0,1,0);
+                            glVertex3f(x1, y, z0);
+
+                            glTexCoord2f(1,1);
+                            glNormal3f(0,1,0);
+                            glVertex3f(x1, y, z1);
+
+
+                            glTexCoord2f(0,0);
+                            glNormal3f(0,1,0);
+                            glVertex3f(x0, y, z0);
+
+                            glTexCoord2f(1,1);
+                            glNormal3f(0,1,0);
+                            glVertex3f(x1, y, z1);
+
+                            glTexCoord2f(0,1);
+                            glNormal3f(0,1,0);
+                            glVertex3f(x0, y, z1);
                         }
                     }
                     glEnd();
