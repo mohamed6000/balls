@@ -54,25 +54,6 @@ public class Renderer {
         // Lights config.
         glShadeModel(GL_SMOOTH);
         glEnable(GL_NORMALIZE);
-        glEnable(GL_LIGHTING);
-
-        // Ambient light.
-        float ambient_color[] = {0.2f, 0.2f, 0.2f, 1.0f};
-        glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambient_color);
-
-        // Light source.
-        float diffuse[]  = {1,1,1,1};
-        float ambient[]  = {0.5f,0,0,1};
-        float specular[] = {1,1,1,1};
-
-        glLightfv(GL_LIGHT0, GL_DIFFUSE,  diffuse);
-        glLightfv(GL_LIGHT0, GL_AMBIENT,  ambient);
-        glLightfv(GL_LIGHT0, GL_SPECULAR, specular);
-        glEnable(GL_LIGHT0);
-
-        // Light position.
-        float light_pos[] = {1,1,1,1};
-        glLightfv(GL_LIGHT0, GL_POSITION, light_pos);
 
         int n = 0, segments_x = 32, segments_y = 32;
         int vertex_count = segments_x * segments_y * 4;

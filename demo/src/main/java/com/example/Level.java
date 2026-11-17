@@ -6,11 +6,17 @@ import java.nio.ByteBuffer;
 public class Level {
     private int width, height;
     private int map[];
+    private float player_start_x, player_start_z;
+    private float goal_x, goal_z;
 
     public Level() {
         width = 0;
         height = 0;
         map = null;
+        player_start_x = 0;
+        player_start_z = 0;
+        goal_x = 0;
+        goal_z = 0;
     }
 
     public int getWidth() {
@@ -25,7 +31,7 @@ public class Level {
         return map;
     }
 
-    public boolean LoadFromFile(String filename, float player_position[], int texture_ids[]) {
+    public boolean LoadFromFile(String filename, int texture_ids[]) {
         int channels[]   = {0};
         int out_width[]  = {0};
         int out_height[] = {0};
@@ -43,8 +49,12 @@ public class Level {
                 int index = i / 4;
                 if (red == 0 && green == 0 && blue == 0) {
                     // Player ball position.
-                    player_position[0] = (float)(index % width);  // X
-                    player_position[2] = (float)(index / width);  // Z
+                    player_start_x = (float)(index % width);  // X
+                    player_start_z = (float)(index / width);  // Z
+                } else if (red == 237 && green == 28 && blue == 36) {
+                    // Goal position.
+                    goal_x = (float)(index % width);
+                    goal_z = (float)(index / width);
                 } else if (red == 128 && green == 64 && blue == 0) {
                     map[index] = texture_ids[0];
                 }else if (red == 213 && green == 106 && blue == 0) {
@@ -58,4 +68,9 @@ public class Level {
         }
         return false;
     }
+
+    public float GetPlayerStartX() { return player_start_x; }
+    public float GetPlayerStartZ() { return player_start_z; }
+    public float GetGoalX() { return goal_x; }
+    public float GetGoalZ() { return goal_z; }
 }
