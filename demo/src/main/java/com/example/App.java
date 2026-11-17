@@ -35,6 +35,7 @@ public class App
             float rotation_axis[] = {0, 0, 0};
 
             float goal[] = {0, 0, 0};
+            LightSource light0 = new LightSource(0, 2, 1);
 
             int tex_container  = r.CreateTexture("assets/textures/container.jpg", true, true);
             int tex_container2 = r.CreateTexture("assets/textures/container2.png", true, true);
@@ -215,32 +216,7 @@ public class App
                 glTranslatef(-camera[0], -camera[1], -camera[2]);
 
                 // Light.
-                {
-                    glEnable(GL_LIGHTING);
-                    glEnable(GL_LIGHT0);
-                    glEnable(GL_COLOR_MATERIAL);
-                    
-                    // Ambient light.
-                    // float ambient_color[] = {0.2f, 0.2f, 0.2f, 1.0f};
-                    // glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambient_color);
-
-                    // Light source.
-                    // float diffuse[]  = {1,1,1,1};
-                    
-                    // glLightfv(GL_LIGHT0, GL_DIFFUSE,  diffuse);
-                    
-                    // Light position.
-                    float light_pos[] = {0,3,0,1};
-                    glLightfv(GL_LIGHT0, GL_POSITION, light_pos);
-                    
-                    // Light color.
-                    float light_color[]    = {1,1,1,1};
-                    float light_specular[] = {1,1,1,1};
-                    float light_ambient[]  = {0,0,0,1};
-                    glLightfv(GL_LIGHT0, GL_DIFFUSE,  light_color);
-                    glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
-                    glLightfv(GL_LIGHT0, GL_AMBIENT,  light_ambient);
-                }
+                light0.Update();
 
                 // Draw stage tiles.
                 float half_cube_size = 0.5f;

@@ -40,6 +40,81 @@ class Vertex {
     }
 }
 
+class LightSource {
+    private float position[];
+    private float diffuse[];
+    private float ambient[];
+    private float specular[];
+
+    public LightSource(float x, float y, float z) {
+        position = new float[4];
+        position[0] = x;
+        position[1] = y;
+        position[2] = z;
+        position[3] = 1;
+
+        diffuse = new float[4];
+        diffuse[0] = 1;
+        diffuse[1] = 1;
+        diffuse[2] = 1;
+        diffuse[3] = 1;
+
+        ambient = new float[4];
+        ambient[0] = 0;
+        ambient[1] = 0;
+        ambient[2] = 0;
+        ambient[3] = 1;
+
+        specular = new float[4];
+        specular[0] = 1;
+        specular[1] = 1;
+        specular[2] = 1;
+        specular[3] = 1;
+    }
+
+    public void SetPosition(float x, float y, float z) {
+        position[0] = x;
+        position[1] = y;
+        position[2] = z;
+    }
+
+    public void SetDiffuse(float r, float g, float b) {
+        diffuse[0] = r;
+        diffuse[1] = g;
+        diffuse[2] = b;
+    }
+
+    public void SetAmbient(float r, float g, float b) {
+        ambient[0] = r;
+        ambient[1] = g;
+        ambient[2] = b;
+    }
+
+    public void SetSpecular(float r, float g, float b) {
+        specular[0] = r;
+        specular[1] = g;
+        specular[2] = b;
+    }
+
+    public void Update() {
+        glEnable(GL_LIGHTING);
+        glEnable(GL_LIGHT0);
+        glEnable(GL_COLOR_MATERIAL);
+        
+        // Ambient light.
+        // float ambient_color[] = {0.2f, 0.2f, 0.2f, 1.0f};
+        // glLightModelfv(GL_LIGHT_MODEL_AMBIENT, ambient_color);
+        
+        // Light position.
+        glLightfv(GL_LIGHT0, GL_POSITION, position);
+        
+        // Light color.
+        glLightfv(GL_LIGHT0, GL_DIFFUSE,  diffuse);
+        glLightfv(GL_LIGHT0, GL_SPECULAR, specular);
+        glLightfv(GL_LIGHT0, GL_AMBIENT,  ambient);
+    }
+}
+
 public class Renderer {
     private Vertex sphere_buffer[];
 
