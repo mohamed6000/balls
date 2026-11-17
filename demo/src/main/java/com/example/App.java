@@ -36,7 +36,13 @@ public class App
 
             float goal[] = {0, 0, 0};
             LightSource light0 = new LightSource(0, 2, 1);
-            Material defaultMaterial = new Material();
+            Material default_material = new Material();
+            Material goal_material = new Material();
+            {
+                goal_material.SetDiffuse(0.7f,0,0,1);
+                goal_material.SetEmissive(0.7f,0,0,1);
+                goal_material.SetShininess(128);
+            }
 
             int tex_container  = r.CreateTexture("assets/textures/container.jpg", true, true);
             int tex_container2 = r.CreateTexture("assets/textures/container2.png", true, true);
@@ -218,7 +224,7 @@ public class App
 
                 // Light.
                 light0.Update();
-                defaultMaterial.Update();
+                default_material.Update();
 
                 // Draw stage tiles.
                 float half_cube_size = 0.5f;
@@ -274,6 +280,7 @@ public class App
 
                 // Draw goal object.
                 {
+                    goal_material.Update();
                     glBindTexture(GL_TEXTURE_2D, 0);
                     r.DrawSphere(goal[0], goal[1] + 0.5f, goal[2], 0.8f, 0.2f, 0.2f, 1);
                 }
@@ -289,6 +296,8 @@ public class App
                     glTranslatef(player[0], player[1]+ball_radius, player[2]);
                     glRotatef((float)Math.toDegrees(angle), axis[0], axis[1], axis[2]);
                     glScalef(scale, scale, scale);
+
+                    default_material.Update();
                     glBindTexture(GL_TEXTURE_2D, tex_earth);
                     r.DrawSphere(0, 0, 0, 1,1,1,1);
                 }
