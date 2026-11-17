@@ -204,9 +204,32 @@ public class App
                 }
 
                 if (DistanceSquared(player, goal) < 0.5f) {
-                    System.out.println("Goal reached!");
-                } else {
-                    System.out.println("Goal not reached");
+                    // Go to next level or game over.
+                    if (level_index < (level_files.length-1)) {
+                        level_index++;
+                        level_path = level_directory_name + "/" + level_files[level_index];
+                        if (!level.LoadFromFile(level_path, texture_ids)) {
+                            throw new Exception("Failed to load level " + level_path);
+                        }
+
+                        level_width  = level.getWidth();
+                        level_height = level.getHeight();
+                        level_data   = level.getMap();
+
+                        player[0] = level.GetPlayerStartX();
+                        player[2] = level.GetPlayerStartZ();
+                        player_velocity[0] = 0;
+                        player_velocity[1] = 0;
+                        player_velocity[2] = 0;
+                        player_orientation[0] = 0;
+                        player_orientation[1] = 0;
+                        player_orientation[2] = 0;
+                        player_orientation[3] = 1;
+                        goal[0]   = level.GetGoalX();
+                        goal[2]   = level.GetGoalZ();
+                    } else {
+                        System.out.println("GAME OVER!!!!!!!!");
+                    }
                 }
 
                 // Render.
