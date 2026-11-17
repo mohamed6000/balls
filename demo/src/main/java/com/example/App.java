@@ -203,6 +203,12 @@ public class App
                     QuaternionNormalizeOrIdentity(player_orientation);
                 }
 
+                if (DistanceSquared(player, goal) < 0.5f) {
+                    System.out.println("Goal reached!");
+                } else {
+                    System.out.println("Goal not reached");
+                }
+
                 // Render.
                 glViewport(0, 0, render_target_width, render_target_height);
                 glClearColor(0.25f, 0.25f, 0.25f, 1);

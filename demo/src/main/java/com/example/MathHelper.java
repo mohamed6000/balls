@@ -97,4 +97,12 @@ public class MathHelper {
         }
         return false;
     }
+
+    public static float DistanceSquared(float[] p0, float[] p1) {
+        return (p1[0]-p0[0])*(p1[0]-p0[0]) + (p1[1]-p0[1])*(p1[1]-p0[1]) + (p1[2]-p0[2])*(p1[2]-p0[2]);
+    }
+
+    public static float Distance(float[] p0, float[] p1) {
+        return (float)Math.sqrt(DistanceSquared(p0, p1));
+    }
 }
