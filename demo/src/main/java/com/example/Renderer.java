@@ -100,6 +100,7 @@ class LightSource {
         glEnable(GL_LIGHTING);
         glEnable(GL_LIGHT0);
         glEnable(GL_COLOR_MATERIAL);
+        glEnable(GL_NORMALIZE);
         
         // Ambient light.
         // float ambient_color[] = {0.2f, 0.2f, 0.2f, 1.0f};

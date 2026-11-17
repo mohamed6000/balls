@@ -1,11 +1,8 @@
 package com.example;
 
 import static org.lwjgl.opengl.GL11.*;
-
 import java.io.File;
-
 import org.lwjgl.glfw.GLFW;
-
 import static com.example.MathHelper.*;
 
 public class App 
@@ -15,6 +12,7 @@ public class App
         try {
             Window window = new Window(640, 480, "Balls");
             Renderer r = new Renderer();
+            float[] background_color = {0.35f, 0.42f, 0.48f, 1};
 
             double last_pointer_x = 0, last_pointer_y = 0;
             float pointer_sensitivity = 0.1f;
@@ -80,6 +78,23 @@ public class App
             player[2] = level.GetPlayerStartZ();
             goal[0]   = level.GetGoalX();
             goal[2]   = level.GetGoalZ();
+
+            // Fog params.
+            float fog_density = 0.085f;
+            float[] fog_color = background_color;
+            boolean fog_linear = false;
+
+            glEnable(GL_FOG);
+            if (fog_linear) {
+                glFogi(GL_FOG_MODE, GL_LINEAR);
+                glFogf(GL_FOG_START, 1);
+                glFogf(GL_FOG_END, 10);
+            } else {
+                glFogi(GL_FOG_MODE, GL_EXP2);
+            }
+            glFogfv(GL_FOG_COLOR, fog_color);
+            glFogf(GL_FOG_DENSITY, fog_density);
+            glHint(GL_FOG_HINT, GL_NICEST);
 
             window.PointerLockAndHide(true);
             double last_frame_time = GLFW.glfwGetTime();
@@ -234,7 +249,7 @@ public class App
 
                 // Render.
                 glViewport(0, 0, render_target_width, render_target_height);
-                glClearColor(0.25f, 0.25f, 0.25f, 1);
+                glClearColor(background_color[0], background_color[1], background_color[2], background_color[3]);
                 glClearDepth(1.0f);
                 glClear(GL_COLOR_BUFFER_BIT|GL_DEPTH_BUFFER_BIT);
 
@@ -269,41 +284,29 @@ public class App
 
                 // Floor.
                 {
-                    float x0 = -level_width;
-                    float z0 = -level_height;
-                    float x1 = +level_width;
-                    float z1 = +level_height;
-                    float y = 0;
-                    float u0 = 0;
-                    float v0 = 0;
-                    float u1 = 2;
-                    float v1 = 2;
+                    float step = 1.0f;
                     glBindTexture(GL_TEXTURE_2D, tex_grass);
                     glColor4f(1,1,1,1);
                     glBegin(GL_TRIANGLES);
-                    glTexCoord2f(u0,v0);
-                    glNormal3f(0, 1, 0);
-                    glVertex3f(x0, y, z0);
+                    for (float x = -level_width; x < level_width; x += step) {
+                        for (float z = -level_height; z < level_height; z += step) {
+                            float x0 = x;
+                            float x1 = x + step;
+                            float z0 = z;
+                            float z1 = z + step;
+                            float y = 0;
 
-                    glTexCoord2f(u1,v0);
-                    glNormal3f(0, 1, 0);
-                    glVertex3f(x1, y, z0);
+                            // Triangle 1
+                            glTexCoord2f(0, 0); glNormal3f(0, 1, 0); glVertex3f(x0, y, z0);
+                            glTexCoord2f(1, 0); glNormal3f(0, 1, 0); glVertex3f(x1, y, z0);
+                            glTexCoord2f(1, 1); glNormal3f(0, 1, 0); glVertex3f(x1, y, z1);
 
-                    glTexCoord2f(u1,v1);
-                    glNormal3f(0, 1, 0);
-                    glVertex3f(x1, y, z1);
-
-                    glTexCoord2f(u0,v0);
-                    glNormal3f(0, 1, 0);
-                    glVertex3f(x0, y, z0);
-
-                    glTexCoord2f(u1,v1);
-                    glNormal3f(0, 1, 0);
-                    glVertex3f(x1, y, z1);
-
-                    glTexCoord2f(u0,v1);
-                    glNormal3f(0, 1, 0);
-                    glVertex3f(x0, y, z1);
+                            // Triangle 2
+                            glTexCoord2f(0, 0); glNormal3f(0, 1, 0); glVertex3f(x0, y, z0);
+                            glTexCoord2f(1, 1); glNormal3f(0, 1, 0); glVertex3f(x1, y, z1);
+                            glTexCoord2f(0, 1); glNormal3f(0, 1, 0); glVertex3f(x0, y, z1);
+                        }
+                    }
                     glEnd();
                 }
 
@@ -322,6 +325,7 @@ public class App
 
                     angle = QuaternionToAxisAngle(player_orientation, axis);
 
+                    glPushMatrix();
                     glTranslatef(player[0], player[1]+ball_radius, player[2]);
                     glRotatef((float)Math.toDegrees(angle), axis[0], axis[1], axis[2]);
                     glScalef(scale, scale, scale);
@@ -329,6 +333,7 @@ public class App
                     default_material.Update();
                     glBindTexture(GL_TEXTURE_2D, tex_earth);
                     r.DrawSphere(0, 0, 0, 1,1,1,1);
+                    glPopMatrix();
                 }
 
                 // Orthographic Projection.
