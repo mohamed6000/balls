@@ -36,6 +36,7 @@ public class App
 
             float goal[] = {0, 0, 0};
             LightSource light0 = new LightSource(0, 2, 1);
+            Material defaultMaterial = new Material();
 
             int tex_container  = r.CreateTexture("assets/textures/container.jpg", true, true);
             int tex_container2 = r.CreateTexture("assets/textures/container2.png", true, true);
@@ -217,6 +218,7 @@ public class App
 
                 // Light.
                 light0.Update();
+                defaultMaterial.Update();
 
                 // Draw stage tiles.
                 float half_cube_size = 0.5f;
@@ -272,7 +274,7 @@ public class App
 
                 // Draw goal object.
                 {
-                    glBindTexture(GL_TEXTURE_2D, tex_grass);
+                    glBindTexture(GL_TEXTURE_2D, 0);
                     r.DrawSphere(goal[0], goal[1] + 0.5f, goal[2], 0.8f, 0.2f, 0.2f, 1);
                 }
 

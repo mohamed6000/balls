@@ -115,6 +115,82 @@ class LightSource {
     }
 }
 
+class Material {
+    private float diffuse[];
+    private float ambient[];
+    private float specular[];
+    private float emissive[];
+    private float shininess;
+
+    public Material() {
+        diffuse = new float[4];
+        diffuse[0] = 1;
+        diffuse[1] = 1;
+        diffuse[2] = 1;
+        diffuse[3] = 1;
+
+        ambient = new float[4];
+        ambient[0] = 0;
+        ambient[1] = 0;
+        ambient[2] = 0;
+        ambient[3] = 1;
+
+        specular = new float[4];
+        specular[0] = 1;
+        specular[1] = 1;
+        specular[2] = 1;
+        specular[3] = 1;
+
+        emissive = new float[4];
+        emissive[0] = 0;
+        emissive[1] = 0;
+        emissive[2] = 0;
+        emissive[3] = 1;
+
+        shininess = 0.2f * 128;
+    }
+
+    public void SetDiffuse(float r, float g, float b, float a) {
+        diffuse[0] = r;
+        diffuse[1] = g;
+        diffuse[2] = b;
+        diffuse[3] = a;
+    }
+
+    public void SetAmbient(float r, float g, float b, float a) {
+        ambient[0] = r;
+        ambient[1] = g;
+        ambient[2] = b;
+        ambient[3] = a;
+    }
+
+    public void SetSpecular(float r, float g, float b, float a) {
+        specular[0] = r;
+        specular[1] = g;
+        specular[2] = b;
+        specular[3] = a;
+    }
+
+    public void SetEmissive(float r, float g, float b, float a) {
+        emissive[0] = r;
+        emissive[1] = g;
+        emissive[2] = b;
+        emissive[3] = a;
+    }
+
+    public void SetShininess(float value) {
+        if (value > 128) value = 128;
+        shininess = value;
+    }
+
+    public void Update() {
+        glMaterialfv(GL_FRONT_AND_BACK, GL_DIFFUSE,  diffuse);
+        glMaterialfv(GL_FRONT_AND_BACK, GL_SPECULAR, specular);
+        glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, emissive);
+        glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, shininess);
+    }
+}
+
 public class Renderer {
     private Vertex sphere_buffer[];
 
