@@ -332,6 +332,28 @@ public class App
                     r.DrawSphere(goal[0], goal[1] + 0.5f, goal[2], 0.8f, 0.2f, 0.2f, 1);
                 }
 
+                // Player shadow pass.
+                {
+                    glEnable(GL_BLEND);
+                    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+                    glDisable(GL_LIGHTING);
+                    glDisable(GL_TEXTURE_2D);
+                    glDepthMask(false);
+
+                    glPushMatrix();
+                    glTranslatef(player[0], 0.01f, player[2]);
+                    float shadow_scale = ball_radius * 2.2f;
+                    glScalef(shadow_scale, 0.01f, shadow_scale);
+                    glRotatef(90, 1,0,0);
+                    r.DrawSphere(0,0,0, 0,0,0,0.4f);
+                    glPopMatrix();
+
+                    glDepthMask(true);
+                    glEnable(GL_TEXTURE_2D);
+                    glEnable(GL_LIGHTING);
+                    glDisable(GL_BLEND);
+                }
+
                 // Draw player ball.
                 {
                     float scale = ball_radius * 2.0f;
