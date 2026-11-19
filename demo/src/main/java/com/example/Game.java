@@ -47,6 +47,7 @@ public class Game {
         goal = new float[]{0, 0, 0};
         light0 = new LightSource(0, 2, 1);
         default_material = new Material();
+        default_material.SetShininess(0);
         goal_material = new Material();
         {
             goal_material.SetDiffuse(0.7f,0,0,1);
@@ -77,28 +78,6 @@ public class Game {
             goal_material.Update();
             glBindTexture(GL_TEXTURE_2D, 0);
             r.DrawSphere(goal[0], goal[1] + 0.5f, goal[2], red*0.8f, g*0.2f, b*0.2f, a*1);
-        }
-
-        // Player shadow pass.
-        if (false) {
-            glEnable(GL_BLEND);
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-            glDisable(GL_LIGHTING);
-            glDisable(GL_TEXTURE_2D);
-            glDepthMask(false);
-
-            glPushMatrix();
-            glTranslatef(player[0], 0.01f, player[2]);
-            float shadow_scale = ball_radius * 2.2f;
-            glScalef(shadow_scale, 0.01f, shadow_scale);
-            glRotatef(90, 1,0,0);
-            r.DrawSphere(0,0,0, 0,0,0,0.4f);
-            glPopMatrix();
-
-            glDepthMask(true);
-            glEnable(GL_TEXTURE_2D);
-            glEnable(GL_LIGHTING);
-            glDisable(GL_BLEND);
         }
 
         // Draw player ball.
@@ -211,7 +190,7 @@ public class Game {
         float[] fog_color = background_color;
         boolean fog_linear = false;
 
-        // glEnable(GL_FOG);
+        glEnable(GL_FOG);
         if (fog_linear) {
             glFogi(GL_FOG_MODE, GL_LINEAR);
             glFogf(GL_FOG_START, 1);
@@ -398,7 +377,7 @@ public class Game {
             glEnable(GL_STENCIL_TEST);
             glStencilFunc(GL_ALWAYS, 1, 0xFFFFFFFF);
             glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
-            glStencilMask(0xFF);
+            // glStencilMask(0xFF);
 
             light0.Update();
             default_material.Update();
@@ -406,7 +385,7 @@ public class Game {
 
             glStencilFunc(GL_EQUAL, 1, 0xFFFFFFFF);
             glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-            glStencilMask(0);
+            // glStencilMask(0);
 
             glDepthMask(false);
             glDisable(GL_LIGHTING);
@@ -430,6 +409,13 @@ public class Game {
             light0.Update();
             default_material.Update();
             DrawScene(1, 1, 1, 1);
+
+            // Draw debug light source.
+            {
+                glDisable(GL_LIGHTING);
+                glBindTexture(GL_TEXTURE_2D, 0);
+                r.DrawSphere(light0.GetPositionX(), light0.GetPositionY(), light0.GetPositionZ(), 1, 1, 1, 1);
+            }
 
 
             // Orthographic Projection.

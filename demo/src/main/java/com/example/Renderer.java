@@ -73,6 +73,10 @@ class LightSource {
         specular[3] = 1;
     }
 
+    public float GetPositionX() { return position[0]; }
+    public float GetPositionY() { return position[1]; }
+    public float GetPositionZ() { return position[2]; }
+
     public void SetPosition(float x, float y, float z) {
         position[0] = x;
         position[1] = y;
