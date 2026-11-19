@@ -6,13 +6,165 @@ import org.lwjgl.glfw.GLFW;
 import static com.example.MathHelper.*;
 
 public class Game {
-    public Game() {
+    private Window window;
+    private Renderer r;
 
+    private int level_width;
+    private int level_height;
+    private int[] level_data;
+
+    private int tex_container;
+    private int tex_container2;
+    private int tex_earth;
+    private int tex_grass;
+    private int texture_ids[];
+
+    float goal[];
+    LightSource light0;
+    Material default_material;
+    Material goal_material;
+
+    float player[];
+    float player_orientation[];
+    float ball_radius;
+
+    public Game() {
+        window = new Window(640, 480, "Balls");
+        r = new Renderer();
+
+        tex_container  = r.CreateTexture("assets/textures/container.jpg", true, true);
+        tex_container2 = r.CreateTexture("assets/textures/container2.png", true, true);
+        tex_earth      = r.CreateTexture("assets/textures/earth.png", true, true);
+        tex_grass      = r.CreateTexture("assets/textures/texGrass.png", true, true);
+
+        texture_ids = new int[]{
+            tex_container,
+            tex_container2,
+            tex_earth,
+            tex_grass,
+        };
+
+        goal = new float[]{0, 0, 0};
+        light0 = new LightSource(0, 2, 1);
+        default_material = new Material();
+        goal_material = new Material();
+        {
+            goal_material.SetDiffuse(0.7f,0,0,1);
+            goal_material.SetEmissive(0.7f,0,0,1);
+            goal_material.SetShininess(128);
+        }
+
+        player = new float[]{0, 0, 0};
+        player_orientation = new float[]{0, 0, 0, 1};
+        ball_radius = 0.28f;
+    }
+
+    private void DrawScene() {
+        // Draw stage tiles.
+        float half_cube_size = 0.5f;
+        for (int y = 0; y < level_height; y++) {
+            for (int x = 0; x < level_width; x++) {
+                int tile = level_data[y*level_width+x];
+                if (tile != 0) {
+                    glBindTexture(GL_TEXTURE_2D, tile);
+                    r.DrawCube(x, half_cube_size, y, half_cube_size, 1,1,1,1);
+                }
+            }
+        }
+
+        // Floor.
+        {
+            float step = 1.0f;
+            glBindTexture(GL_TEXTURE_2D, tex_grass);
+            glColor4f(1,1,1,1);
+            glBegin(GL_TRIANGLES);
+            for (float x = -level_width; x < level_width; x += step) {
+                for (float z = -level_height; z < level_height; z += step) {
+                    float x0 = x;
+                    float x1 = x + step;
+                    float z0 = z;
+                    float z1 = z + step;
+                    float y = 0;
+
+                    glTexCoord2f(0,0);
+                    glNormal3f(0,1,0);
+                    glVertex3f(x0, y, z0);
+
+                    glTexCoord2f(1,0);
+                    glNormal3f(0,1,0);
+                    glVertex3f(x1, y, z0);
+
+                    glTexCoord2f(1,1);
+                    glNormal3f(0,1,0);
+                    glVertex3f(x1, y, z1);
+
+
+                    glTexCoord2f(0,0);
+                    glNormal3f(0,1,0);
+                    glVertex3f(x0, y, z0);
+
+                    glTexCoord2f(1,1);
+                    glNormal3f(0,1,0);
+                    glVertex3f(x1, y, z1);
+
+                    glTexCoord2f(0,1);
+                    glNormal3f(0,1,0);
+                    glVertex3f(x0, y, z1);
+                }
+            }
+            glEnd();
+        }
+
+        // Draw goal object.
+        {
+            goal_material.Update();
+            glBindTexture(GL_TEXTURE_2D, 0);
+            r.DrawSphere(goal[0], goal[1] + 0.5f, goal[2], 0.8f, 0.2f, 0.2f, 1);
+        }
+
+        // Player shadow pass.
+        {
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            glDisable(GL_LIGHTING);
+            glDisable(GL_TEXTURE_2D);
+            glDepthMask(false);
+
+            glPushMatrix();
+            glTranslatef(player[0], 0.01f, player[2]);
+            float shadow_scale = ball_radius * 2.2f;
+            glScalef(shadow_scale, 0.01f, shadow_scale);
+            glRotatef(90, 1,0,0);
+            r.DrawSphere(0,0,0, 0,0,0,0.4f);
+            glPopMatrix();
+
+            glDepthMask(true);
+            glEnable(GL_TEXTURE_2D);
+            glEnable(GL_LIGHTING);
+            glDisable(GL_BLEND);
+        }
+
+        // Draw player ball.
+        {
+            float scale = ball_radius * 2.0f;
+            float angle;
+            float axis[] = {1, 0, 0};
+
+            angle = QuaternionToAxisAngle(player_orientation, axis);
+
+            glPushMatrix();
+            glTranslatef(player[0], player[1]+ball_radius, player[2]);
+            glRotatef((float)Math.toDegrees(angle), axis[0], axis[1], axis[2]);
+            glScalef(scale, scale, scale);
+
+            default_material.Update();
+            glBindTexture(GL_TEXTURE_2D, tex_earth);
+            r.DrawSphere(0, 0, 0, 1,1,1,1);
+            glPopMatrix();
+        }
     }
 
     public void Run() throws Exception {
-        Window window = new Window(640, 480, "Balls");
-        Renderer r = new Renderer();
         float[] background_color = {0.35f, 0.42f, 0.48f, 1};
 
         double last_pointer_x = 0, last_pointer_y = 0;
@@ -25,35 +177,10 @@ public class Game {
         float camera_forward[] = {0, 0, 0};
         float camera_right[] = {0, 0, 0};
 
-        float player[] = {0, 0, 0};
-        float player_orientation[] = {0, 0, 0, 1};
         float player_velocity[] = {0, 0, 0};
         float player_friction = 0.25f;
         float player_speed = 20.0f;
-        float ball_radius = 0.28f;
         float rotation_axis[] = {0, 0, 0};
-
-        float goal[] = {0, 0, 0};
-        LightSource light0 = new LightSource(0, 2, 1);
-        Material default_material = new Material();
-        Material goal_material = new Material();
-        {
-            goal_material.SetDiffuse(0.7f,0,0,1);
-            goal_material.SetEmissive(0.7f,0,0,1);
-            goal_material.SetShininess(128);
-        }
-
-        int tex_container  = r.CreateTexture("assets/textures/container.jpg", true, true);
-        int tex_container2 = r.CreateTexture("assets/textures/container2.png", true, true);
-        int tex_earth      = r.CreateTexture("assets/textures/earth.png", true, true);
-        int tex_grass      = r.CreateTexture("assets/textures/texGrass.png", true, true);
-
-        int texture_ids[] = {
-            tex_container,
-            tex_container2,
-            tex_earth,
-            tex_grass,
-        };
 
         String level_directory_name = "assets/levels";
         File levels_directory = new File(level_directory_name);
@@ -71,9 +198,9 @@ public class Game {
             throw new Exception("Failed to load level " + level_path);
         }
 
-        int level_width  = level.getWidth();
-        int level_height = level.getHeight();
-        int level_data[] = level.getMap();
+        level_width  = level.getWidth();
+        level_height = level.getHeight();
+        level_data   = level.getMap();
 
         player[0] = level.GetPlayerStartX();
         player[2] = level.GetPlayerStartZ();
@@ -271,108 +398,7 @@ public class Game {
             light0.Update();
             default_material.Update();
 
-            // Draw stage tiles.
-            float half_cube_size = 0.5f;
-            for (int y = 0; y < level_height; y++) {
-                for (int x = 0; x < level_width; x++) {
-                    int tile = level_data[y*level_width+x];
-                    if (tile != 0) {
-                        glBindTexture(GL_TEXTURE_2D, tile);
-                        r.DrawCube(x, half_cube_size, y, half_cube_size, 1,1,1,1);
-                    }
-                }
-            }
-
-            // Floor.
-            {
-                float step = 1.0f;
-                glBindTexture(GL_TEXTURE_2D, tex_grass);
-                glColor4f(1,1,1,1);
-                glBegin(GL_TRIANGLES);
-                for (float x = -level_width; x < level_width; x += step) {
-                    for (float z = -level_height; z < level_height; z += step) {
-                        float x0 = x;
-                        float x1 = x + step;
-                        float z0 = z;
-                        float z1 = z + step;
-                        float y = 0;
-
-                        glTexCoord2f(0,0);
-                        glNormal3f(0,1,0);
-                        glVertex3f(x0, y, z0);
-
-                        glTexCoord2f(1,0);
-                        glNormal3f(0,1,0);
-                        glVertex3f(x1, y, z0);
-
-                        glTexCoord2f(1,1);
-                        glNormal3f(0,1,0);
-                        glVertex3f(x1, y, z1);
-
-
-                        glTexCoord2f(0,0);
-                        glNormal3f(0,1,0);
-                        glVertex3f(x0, y, z0);
-
-                        glTexCoord2f(1,1);
-                        glNormal3f(0,1,0);
-                        glVertex3f(x1, y, z1);
-
-                        glTexCoord2f(0,1);
-                        glNormal3f(0,1,0);
-                        glVertex3f(x0, y, z1);
-                    }
-                }
-                glEnd();
-            }
-
-            // Draw goal object.
-            {
-                goal_material.Update();
-                glBindTexture(GL_TEXTURE_2D, 0);
-                r.DrawSphere(goal[0], goal[1] + 0.5f, goal[2], 0.8f, 0.2f, 0.2f, 1);
-            }
-
-            // Player shadow pass.
-            {
-                glEnable(GL_BLEND);
-                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-                glDisable(GL_LIGHTING);
-                glDisable(GL_TEXTURE_2D);
-                glDepthMask(false);
-
-                glPushMatrix();
-                glTranslatef(player[0], 0.01f, player[2]);
-                float shadow_scale = ball_radius * 2.2f;
-                glScalef(shadow_scale, 0.01f, shadow_scale);
-                glRotatef(90, 1,0,0);
-                r.DrawSphere(0,0,0, 0,0,0,0.4f);
-                glPopMatrix();
-
-                glDepthMask(true);
-                glEnable(GL_TEXTURE_2D);
-                glEnable(GL_LIGHTING);
-                glDisable(GL_BLEND);
-            }
-
-            // Draw player ball.
-            {
-                float scale = ball_radius * 2.0f;
-                float angle;
-                float axis[] = {1, 0, 0};
-
-                angle = QuaternionToAxisAngle(player_orientation, axis);
-
-                glPushMatrix();
-                glTranslatef(player[0], player[1]+ball_radius, player[2]);
-                glRotatef((float)Math.toDegrees(angle), axis[0], axis[1], axis[2]);
-                glScalef(scale, scale, scale);
-
-                default_material.Update();
-                glBindTexture(GL_TEXTURE_2D, tex_earth);
-                r.DrawSphere(0, 0, 0, 1,1,1,1);
-                glPopMatrix();
-            }
+            DrawScene();
 
             // Orthographic Projection.
             glMatrixMode(GL_PROJECTION);
