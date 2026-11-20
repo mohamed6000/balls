@@ -20,6 +20,7 @@ public class Game {
     private int texture_ids[];
 
     float goal[];
+    float shadow_matrix[];
     LightSource light0;
     Material default_material;
     Material goal_material;
@@ -45,7 +46,7 @@ public class Game {
         };
 
         goal = new float[]{0, 0, 0};
-        light0 = new LightSource(0, 2, 1);
+        light0 = new LightSource(0, 20, 1);
         default_material = new Material();
         default_material.SetShininess(0);
         goal_material = new Material();
@@ -58,6 +59,8 @@ public class Game {
         player = new float[]{0, 0, 0};
         player_orientation = new float[]{0, 0, 0, 1};
         ball_radius = 0.28f;
+
+        shadow_matrix = new float[16];
     }
 
     private void DrawScene(float red, float g, float b, float a) {
@@ -142,6 +145,36 @@ public class Game {
         glEnd();
     }
 
+    private void CreatePlanarShadowMatrix(float light_x, float light_y, float light_z, float plane_y, 
+                                          float[] out_matrix) {
+        float effective_light_y = light_y;
+        if (Math.abs(light_y - plane_y) < 0.01f) {
+            effective_light_y = plane_y + 0.01f;
+        }
+        float d = effective_light_y - plane_y;
+
+        // Column major matrix.
+        out_matrix[0] = d;
+        out_matrix[1] = 0;
+        out_matrix[2] = 0;
+        out_matrix[3] = 0;
+
+        out_matrix[4] = -light_x;
+        out_matrix[5] = -plane_y;
+        out_matrix[6] = -light_z;
+        out_matrix[7] = -1;
+
+        out_matrix[8]  = 0;
+        out_matrix[9]  = 0;
+        out_matrix[10] = d;
+        out_matrix[11] = 0;
+
+        out_matrix[12] = light_x * plane_y;
+        out_matrix[13] = plane_y * effective_light_y;
+        out_matrix[14] = light_z * plane_y;
+        out_matrix[15] = effective_light_y;
+    }
+
     public void Run() throws Exception {
         float[] background_color = {0.35f, 0.42f, 0.48f, 1};
 
@@ -190,7 +223,7 @@ public class Game {
         float[] fog_color = background_color;
         boolean fog_linear = false;
 
-        glEnable(GL_FOG);
+        // glEnable(GL_FOG);
         if (fog_linear) {
             glFogi(GL_FOG_MODE, GL_LINEAR);
             glFogf(GL_FOG_START, 1);
@@ -373,31 +406,38 @@ public class Game {
             glMatrixMode(GL_MODELVIEW);
             glLoadIdentity();
 
-            glDepthMask(false);
             glEnable(GL_STENCIL_TEST);
             glStencilFunc(GL_ALWAYS, 1, 0xFFFFFFFF);
             glStencilOp(GL_KEEP, GL_KEEP, GL_REPLACE);
-            // glStencilMask(0xFF);
+            glStencilMask(0xFF);
 
             light0.Update();
             default_material.Update();
             DrawFloor(1, 1, 1, 1);
 
             glStencilFunc(GL_EQUAL, 1, 0xFFFFFFFF);
-            glStencilOp(GL_KEEP, GL_KEEP, GL_KEEP);
-            // glStencilMask(0);
+            glStencilOp(GL_KEEP, GL_KEEP, GL_INCR);
+            glStencilMask(0xFF);
 
             glDepthMask(false);
             glDisable(GL_LIGHTING);
             glDisable(GL_TEXTURE_2D);
+            glDisable(GL_CULL_FACE);
             glEnable(GL_BLEND);
             glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+            CreatePlanarShadowMatrix(light0.GetPositionX(),
+                                     light0.GetPositionY(),
+                                     light0.GetPositionZ(),
+                                     0.002f,
+                                     shadow_matrix);
+
             glPushMatrix();
-            glTranslatef(0, 0.002f, 0);
-            glScalef(1, 0.001f, 1);
+            glMultMatrixf(shadow_matrix);
+            // glTranslatef(0, 0.002f, 0);
+            // glScalef(1, 0.001f, 1);
             // glRotatef(1, 0, 1, 0);
-            DrawScene(0, 0, 0, 0.4f);
+            DrawScene(0, 0, 0, 0.45f);
             glPopMatrix();
 
             glDisable(GL_BLEND);
@@ -415,6 +455,7 @@ public class Game {
                 glDisable(GL_LIGHTING);
                 glBindTexture(GL_TEXTURE_2D, 0);
                 r.DrawSphere(light0.GetPositionX(), light0.GetPositionY(), light0.GetPositionZ(), 1, 1, 1, 1);
+                glEnable(GL_LIGHTING);
             }
 
 
