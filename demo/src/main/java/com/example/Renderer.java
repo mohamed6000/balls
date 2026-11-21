@@ -238,6 +238,10 @@ class Font {
 
     public int GetTexture() { return texture_id; }
 
+     public void DrawText2D(String text, int x, int y) {
+        DrawText2D(text, x, y, 1,1,1,1);
+     }
+
     public void DrawText2D(String text, int x, int y, float r, float g, float b, float a) {
         try (MemoryStack stack = MemoryStack.stackPush()) {
             float[] current_x = {x};

@@ -469,9 +469,7 @@ public class Game {
             glMatrixMode(GL_MODELVIEW);
             glLoadIdentity();
 
-            // glBindTexture(GL_TEXTURE_2D, font.GetTexture());
-            // r.DrawQuad(0, 0, 1024, 1024, 1,1,1,1);
-            font.DrawText2D("Hello friend", 0, 0, 1, 1, 1, 1);
+            font.DrawText2D("Hello friend", 0, 0);
 
             glEnable(GL_DEPTH_TEST);
 
