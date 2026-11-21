@@ -65,7 +65,7 @@ public class Game {
         shadow_matrix = new float[16];
     }
 
-    private void DrawScene(float red, float g, float b, float a) {
+    private void DrawScene(float red, float g, float b, float a, boolean shadow_pass) {
         // Draw stage tiles.
         float half_cube_size = 0.5f;
         for (int y = 0; y < level_height; y++) {
@@ -101,6 +101,23 @@ public class Game {
             default_material.Update();
             glBindTexture(GL_TEXTURE_2D, tex_earth);
             r.DrawSphere(0, 0, 0, red,g,b,a);
+            glPopMatrix();
+
+            glPushMatrix();
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+            if (shadow_pass) {
+                glEnable(GL_TEXTURE_2D);
+                glTranslatef(player[0], player[1]+1, player[2]);
+                font.DrawText3D("Player", 0.02f, red,g,b,a);
+                glDisable(GL_TEXTURE_2D);
+            } else {
+                glDisable(GL_LIGHTING);
+                glTranslatef(player[0], player[1]+1, player[2]);
+                font.DrawText3D("Player", 0.02f, red,g,b,a);
+                glEnable(GL_LIGHTING);
+            }
+            glDisable(GL_BLEND);
             glPopMatrix();
         }
     }
@@ -436,7 +453,7 @@ public class Game {
 
             glPushMatrix();
             glMultMatrixf(shadow_matrix);
-            DrawScene(0, 0, 0, 0.45f);
+            DrawScene(0, 0, 0, 0.45f, true);
             glPopMatrix();
 
             glDisable(GL_BLEND);
@@ -447,7 +464,7 @@ public class Game {
 
             light0.Update();
             default_material.Update();
-            DrawScene(1, 1, 1, 1);
+            DrawScene(1, 1, 1, 1, false);
 
             // Draw debug light source.
             {
