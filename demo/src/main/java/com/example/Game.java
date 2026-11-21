@@ -8,6 +8,7 @@ import static com.example.MathHelper.*;
 public class Game {
     private Window window;
     private Renderer r;
+    Font font;
 
     private int level_width;
     private int level_height;
@@ -29,9 +30,10 @@ public class Game {
     float player_orientation[];
     float ball_radius;
 
-    public Game() {
+    public Game() throws Exception {
         window = new Window(640, 480, "Balls");
         r = new Renderer();
+        font = new Font("C:/windows/fonts/arial.ttf", 32);
 
         tex_container  = r.CreateTexture("assets/textures/container.jpg", true, true);
         tex_container2 = r.CreateTexture("assets/textures/container2.png", true, true);
@@ -434,9 +436,6 @@ public class Game {
 
             glPushMatrix();
             glMultMatrixf(shadow_matrix);
-            // glTranslatef(0, 0.002f, 0);
-            // glScalef(1, 0.001f, 1);
-            // glRotatef(1, 0, 1, 0);
             DrawScene(0, 0, 0, 0.45f);
             glPopMatrix();
 
@@ -455,24 +454,25 @@ public class Game {
                 glDisable(GL_LIGHTING);
                 glBindTexture(GL_TEXTURE_2D, 0);
                 r.DrawSphere(light0.GetPositionX(), light0.GetPositionY(), light0.GetPositionZ(), 1, 1, 1, 1);
-                glEnable(GL_LIGHTING);
             }
 
 
             // Orthographic Projection.
-            // glMatrixMode(GL_PROJECTION);
-            // glLoadIdentity();
-            // glOrtho(0, render_target_width, 0, render_target_height, -2000, 2000);
-            // glDisable(GL_LIGHTING);
-            // glBindTexture(GL_TEXTURE_2D, 0);
+            glMatrixMode(GL_PROJECTION);
+            glLoadIdentity();
+            glOrtho(0, render_target_width, 0, render_target_height, -2000, 2000);
+            glDisable(GL_LIGHTING);
+            glDisable(GL_DEPTH_TEST);
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-            // glMatrixMode(GL_MODELVIEW);
-            // glLoadIdentity();
+            glMatrixMode(GL_MODELVIEW);
+            glLoadIdentity();
 
-            // draw_quad(100, 100, 200, 200, 1,1,1,1);
-            // draw_quad(350, 350, 360, 360, 0,0,1,1);
+            glBindTexture(GL_TEXTURE_2D, font.GetTexture());
+            r.DrawQuad(0, 0, 1024, 1024, 1,1,1,1);
 
-            // draw_circle(250, 250, 50, 32, 1,1,1,1);
+            glEnable(GL_DEPTH_TEST);
 
             glFlush();
 

@@ -2,10 +2,15 @@ package com.example;
 
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL;
+import org.lwjgl.stb.STBTTBakedChar;
+import org.lwjgl.stb.STBTruetype;
+
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.stb.STBImage.*;
 
 import java.nio.ByteBuffer;
+import java.nio.file.Files;
+import java.nio.file.Path;
 
 class Vertex {
     public float x, y, z;
@@ -197,6 +202,44 @@ class Material {
     }
 }
 
+class Font {
+    private int texture_id;
+    private STBTTBakedChar.Buffer char_data;
+
+    public Font(String filename, int pixel_size) throws Exception {
+        byte[] bytes = Files.readAllBytes(Path.of(filename));
+        ByteBuffer ttf_buffer = BufferUtils.createByteBuffer(bytes.length);
+        ttf_buffer.put(bytes).flip();
+
+        int bitmap_width  = 1024;
+        int bitmap_height = 1024;
+        ByteBuffer bitmap = BufferUtils.createByteBuffer(bitmap_width*bitmap_height);
+        char_data = STBTTBakedChar.malloc(96);
+        int result = STBTruetype.stbtt_BakeFontBitmap(ttf_buffer, pixel_size, bitmap, bitmap_width, bitmap_height, 32, char_data);
+        if (result <= 0) {
+            throw new RuntimeException("Failed to bake font bitmap.");
+        }
+
+        bitmap.rewind();
+        texture_id = glGenTextures();
+        glBindTexture(GL_TEXTURE_2D, texture_id);
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+        
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_ALPHA, bitmap_width, bitmap_height, 0, GL_ALPHA, GL_UNSIGNED_BYTE, bitmap);
+    }
+
+    public int GetTexture() { return texture_id; }
+
+    public void Finish() {
+        char_data.free();
+    }
+}
+
 public class Renderer {
     private Vertex sphere_buffer[];
 
@@ -373,12 +416,18 @@ public class Renderer {
     public void DrawQuad(float x0, float y0, float x1, float y1, float r, float g, float b, float a) {
         glColor4f(r,g,b,a);
         glBegin(GL_TRIANGLES);
+            glTexCoord2f(0,0);
             glVertex3f(x0, y0, 0);
+            glTexCoord2f(1,0);
             glVertex3f(x1, y0, 0);
+            glTexCoord2f(1,1);
             glVertex3f(x1, y1, 0);
-
+            
+            glTexCoord2f(0,0);
             glVertex3f(x0, y0, 0);
+            glTexCoord2f(1,1);
             glVertex3f(x1, y1, 0);
+            glTexCoord2f(0,1);
             glVertex3f(x0, y1, 0);
         glEnd();
     }
