@@ -2,8 +2,10 @@ package com.example;
 
 import org.lwjgl.BufferUtils;
 import org.lwjgl.opengl.GL;
+import org.lwjgl.stb.STBTTAlignedQuad;
 import org.lwjgl.stb.STBTTBakedChar;
 import org.lwjgl.stb.STBTruetype;
+import org.lwjgl.system.MemoryStack;
 
 import static org.lwjgl.opengl.GL11.*;
 import static org.lwjgl.stb.STBImage.*;
@@ -205,14 +207,15 @@ class Material {
 class Font {
     private int texture_id;
     private STBTTBakedChar.Buffer char_data;
+    private int bitmap_width, bitmap_height;
 
     public Font(String filename, int pixel_size) throws Exception {
         byte[] bytes = Files.readAllBytes(Path.of(filename));
         ByteBuffer ttf_buffer = BufferUtils.createByteBuffer(bytes.length);
         ttf_buffer.put(bytes).flip();
 
-        int bitmap_width  = 1024;
-        int bitmap_height = 1024;
+        bitmap_width  = 1024;
+        bitmap_height = 1024;
         ByteBuffer bitmap = BufferUtils.createByteBuffer(bitmap_width*bitmap_height);
         char_data = STBTTBakedChar.malloc(96);
         int result = STBTruetype.stbtt_BakeFontBitmap(ttf_buffer, pixel_size, bitmap, bitmap_width, bitmap_height, 32, char_data);
@@ -235,8 +238,55 @@ class Font {
 
     public int GetTexture() { return texture_id; }
 
+    public void DrawText2D(String text, int x, int y, float r, float g, float b, float a) {
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            float[] current_x = {x};
+            float[] current_y = {y};
+            float baseline = y;
+            STBTTAlignedQuad q = STBTTAlignedQuad.malloc(stack);
+
+            glBindTexture(GL_TEXTURE_2D, texture_id);
+
+            glColor4f(r, g, b, a);
+            glBegin(GL_TRIANGLES);
+            for (int index = 0; index < text.length(); index++) {
+                char codepoint = text.charAt(index);
+                if (codepoint < 32 || codepoint >= 128) continue;
+
+                STBTruetype.stbtt_GetBakedQuad(char_data, bitmap_width, bitmap_height, (codepoint-32), 
+                                               current_x, current_y, q, true);
+
+                float x0 = q.x0();
+                float y0 = baseline + (baseline - q.y0());
+                float x1 = q.x1();
+                float y1 = baseline + (baseline - q.y1());
+
+                float u0 = q.s0();
+                float v0 = q.t0();
+                float u1 = q.s1();
+                float v1 = q.t1();
+                
+                glTexCoord2f(u0, v0);
+                glVertex3f(x0, y0, 0);
+                glTexCoord2f(u1, v0);
+                glVertex3f(x1, y0, 0);
+                glTexCoord2f(u1, v1);
+                glVertex3f(x1, y1, 0);
+
+                glTexCoord2f(u0, v0);
+                glVertex3f(x0, y0, 0);
+                glTexCoord2f(u1, v1);
+                glVertex3f(x1, y1, 0);
+                glTexCoord2f(u0, v1);
+                glVertex3f(x0, y1, 0);
+            }
+            glEnd();
+        }
+    }
+
     public void Finish() {
         char_data.free();
+        glDeleteTextures(texture_id);
     }
 }
 
