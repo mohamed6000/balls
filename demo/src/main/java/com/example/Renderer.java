@@ -246,6 +246,10 @@ class Font {
         DrawTextScaled2D(text, x, y, 1.0f, r, g, b, a);
     }
 
+    public void DrawTextScaled2D(String text, int x, int y, float scale) {
+        DrawTextScaled2D(text, x, y, scale, 1,1,1,1);
+    }
+
     public void DrawTextScaled2D(String text, int x, int y, float scale, float r, float g, float b, float a) {
         try (MemoryStack stack = MemoryStack.stackPush()) {
             float[] current_x = {x};
