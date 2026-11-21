@@ -296,6 +296,52 @@ class Font {
         }
     }
 
+    public void DrawText3D(String text, float scale, float r, float g, float b, float a) {
+        try (MemoryStack stack = MemoryStack.stackPush()) {
+            float[] current_x = {0};
+            float[] current_y = {0};
+            float baseline = 0;
+            STBTTAlignedQuad q = STBTTAlignedQuad.malloc(stack);
+
+            glBindTexture(GL_TEXTURE_2D, texture_id);
+
+            glColor4f(r, g, b, a);
+            glBegin(GL_TRIANGLES);
+            for (int index = 0; index < text.length(); index++) {
+                char codepoint = text.charAt(index);
+                if (codepoint < 32 || codepoint >= 128) continue;
+
+                STBTruetype.stbtt_GetBakedQuad(char_data, bitmap_width, bitmap_height, (codepoint-32), 
+                                               current_x, current_y, q, true);
+
+                float x0 = q.x0() * scale;
+                float y0 = (baseline + (baseline - q.y0())) * scale;
+                float x1 = q.x1() * scale;
+                float y1 = (baseline + (baseline - q.y1())) * scale;
+
+                float u0 = q.s0();
+                float v0 = q.t0();
+                float u1 = q.s1();
+                float v1 = q.t1();
+                
+                glTexCoord2f(u0, v0);
+                glVertex3f(x0, y0, 0);
+                glTexCoord2f(u1, v0);
+                glVertex3f(x1, y0, 0);
+                glTexCoord2f(u1, v1);
+                glVertex3f(x1, y1, 0);
+
+                glTexCoord2f(u0, v0);
+                glVertex3f(x0, y0, 0);
+                glTexCoord2f(u1, v1);
+                glVertex3f(x1, y1, 0);
+                glTexCoord2f(u0, v1);
+                glVertex3f(x0, y1, 0);
+            }
+            glEnd();
+        }
+    }
+
     public void Finish() {
         char_data.free();
         glDeleteTextures(texture_id);

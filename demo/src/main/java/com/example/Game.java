@@ -454,6 +454,13 @@ public class Game {
                 glDisable(GL_LIGHTING);
                 glBindTexture(GL_TEXTURE_2D, 0);
                 r.DrawSphere(light0.GetPositionX(), light0.GetPositionY(), light0.GetPositionZ(), 1, 1, 1, 1);
+
+                glPushMatrix();
+                glEnable(GL_BLEND);
+                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+                glTranslatef(light0.GetPositionX(), light0.GetPositionY(), light0.GetPositionZ());
+                font.DrawText3D("Light0", 0.15f, 1,1,1,1);
+                glPopMatrix();
             }
 
 
