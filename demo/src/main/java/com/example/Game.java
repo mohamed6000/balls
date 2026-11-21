@@ -469,7 +469,7 @@ public class Game {
             glMatrixMode(GL_MODELVIEW);
             glLoadIdentity();
 
-            font.DrawText2D("Hello friend", 0, 0);
+            font.DrawTextScaled2D("Hello friend", 0, 0, 2, 1,1,1,1);
 
             glEnable(GL_DEPTH_TEST);
 
