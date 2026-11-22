@@ -27,6 +27,9 @@ public class Game {
     Material goal_material;
 
     float camera_rotation[];
+    float camera_forward[];
+    float camera_right[];
+    float camera_up[];
 
     float player[];
     float player_orientation[];
@@ -64,9 +67,59 @@ public class Game {
         player_orientation = new float[]{0, 0, 0, 1};
         ball_radius = 0.28f;
 
-        camera_rotation = new float[]{0, 0};
+        camera_rotation  = new float[]{0, 0};
+        camera_forward   = new float[]{0, 0, 0};
+        camera_right     = new float[]{0, 0, 0};
+        camera_up        = new float[]{0, 0, 0};
 
         shadow_matrix = new float[16];
+    }
+
+    private void DrawBillboardQuad(float x, float y, float z, float width, float height, 
+                                   float red, float green, float blue, float alpha) {
+        float half_width  = width  * 0.5f;
+        float half_height = height * 0.5f;
+        
+        glColor4f(red, green, blue, alpha);
+        glBegin(GL_TRIANGLES);
+        glTexCoord2f(0,0);
+        glVertex3f(
+            x - camera_right[0] * half_width - camera_up[0] * half_height,
+            y - camera_right[1] * half_width - camera_up[1] * half_height,
+            z - camera_right[2] * half_width - camera_up[2] * half_height
+        );
+        glTexCoord2f(1,0);
+        glVertex3f(
+            x + camera_right[0] * half_width - camera_up[0] * half_height,
+            y + camera_right[1] * half_width - camera_up[1] * half_height,
+            z + camera_right[2] * half_width - camera_up[2] * half_height
+        );
+        glTexCoord2f(1,1);
+        glVertex3f(
+            x + camera_right[0] * half_width + camera_up[0] * half_height,
+            y + camera_right[1] * half_width + camera_up[1] * half_height,
+            z + camera_right[2] * half_width + camera_up[2] * half_height
+        );
+
+        glTexCoord2f(0,0);
+        glVertex3f(
+            x - camera_right[0] * half_width - camera_up[0] * half_height,
+            y - camera_right[1] * half_width - camera_up[1] * half_height,
+            z - camera_right[2] * half_width - camera_up[2] * half_height
+        );
+        glTexCoord2f(1,1);
+        glVertex3f(
+            x + camera_right[0] * half_width + camera_up[0] * half_height,
+            y + camera_right[1] * half_width + camera_up[1] * half_height,
+            z + camera_right[2] * half_width + camera_up[2] * half_height
+        );
+        glTexCoord2f(0,1);
+        glVertex3f(
+            x - camera_right[0] * half_width + camera_up[0] * half_height,
+            y - camera_right[1] * half_width + camera_up[1] * half_height,
+            z - camera_right[2] * half_width + camera_up[2] * half_height
+        );
+        glEnd();
     }
 
     private void DrawScene(float red, float g, float b, float a, boolean shadow_pass) {
@@ -207,8 +260,6 @@ public class Game {
 
         float camera[] = {0, 0, 0};
         float camera_radius = 7.0f;
-        float camera_forward[] = {0, 0, 0};
-        float camera_right[] = {0, 0, 0};
 
         float player_velocity[] = {0, 0, 0};
         float player_friction = 0.25f;
@@ -309,7 +360,7 @@ public class Game {
             }
 
             // Get camera forward and right vectors.
-            float yaw = (float)Math.toRadians(camera_rotation[1]);
+            float yaw  = (float)Math.toRadians(camera_rotation[1]);
             float cyaw = (float)Math.cos(yaw);
             float syaw = (float)Math.sin(yaw);
 
@@ -317,6 +368,8 @@ public class Game {
             camera_forward[2] = cyaw;
             camera_right[0]   = cyaw;
             camera_right[2]   = -syaw;
+
+            CrossProduct3(camera_forward, camera_right, camera_up);
 
             // Local input to world input transform.
             float world_input_x = input_vector[0] * camera_right[0] + input_vector[2] * camera_forward[0];
@@ -468,6 +521,8 @@ public class Game {
             light0.Update();
             default_material.Update();
             DrawScene(1, 1, 1, 1, false);
+
+            DrawBillboardQuad(10, 0, 10, 4, 4,  1,1,1,1);
 
             // Draw debug light source.
             {
