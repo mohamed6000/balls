@@ -208,6 +208,7 @@ class Font {
     private int texture_id;
     private STBTTBakedChar.Buffer char_data;
     private int bitmap_width, bitmap_height;
+    private int character_height;
 
     public Font(String filename, int pixel_size) throws Exception {
         byte[] bytes = Files.readAllBytes(Path.of(filename));
@@ -216,6 +217,7 @@ class Font {
 
         bitmap_width  = 1024;
         bitmap_height = 1024;
+        character_height = pixel_size;
         ByteBuffer bitmap = BufferUtils.createByteBuffer(bitmap_width*bitmap_height);
         char_data = STBTTBakedChar.malloc(96);
         int result = STBTruetype.stbtt_BakeFontBitmap(ttf_buffer, pixel_size, bitmap, bitmap_width, bitmap_height, 32, char_data);
@@ -237,13 +239,14 @@ class Font {
     }
 
     public int GetTexture() { return texture_id; }
+    public int GetCharacterHeight() { return character_height; }
 
     public void DrawText2D(String text, int x, int y) {
-        DrawTextScaled2D(text, x, y, 1.0f, 1,1,1,1);
+        DrawTextScaled2D(text, x, y, character_height, 1,1,1,1);
     }
 
     public void DrawText2D(String text, int x, int y, float r, float g, float b, float a) {
-        DrawTextScaled2D(text, x, y, 1.0f, r, g, b, a);
+        DrawTextScaled2D(text, x, y, character_height, r, g, b, a);
     }
 
     public void DrawTextScaled2D(String text, int x, int y, float scale) {
@@ -259,6 +262,8 @@ class Font {
 
             glBindTexture(GL_TEXTURE_2D, texture_id);
 
+            float font_scale = scale * (1.0f / character_height);
+
             glColor4f(r, g, b, a);
             glBegin(GL_TRIANGLES);
             for (int index = 0; index < text.length(); index++) {
@@ -268,10 +273,10 @@ class Font {
                 STBTruetype.stbtt_GetBakedQuad(char_data, bitmap_width, bitmap_height, (codepoint-32), 
                                                current_x, current_y, q, true);
 
-                float x0 = q.x0() * scale;
-                float y0 = (baseline + (baseline - q.y0())) * scale;
-                float x1 = q.x1() * scale;
-                float y1 = (baseline + (baseline - q.y1())) * scale;
+                float x0 = q.x0() * font_scale;
+                float y0 = (baseline + (baseline - q.y0())) * font_scale;
+                float x1 = q.x1() * font_scale;
+                float y1 = (baseline + (baseline - q.y1())) * font_scale;
 
                 float u0 = q.s0();
                 float v0 = q.t0();
@@ -305,6 +310,8 @@ class Font {
 
             glBindTexture(GL_TEXTURE_2D, texture_id);
 
+            float font_scale = scale * (1.0f / character_height);
+
             glColor4f(r, g, b, a);
             glBegin(GL_TRIANGLES);
             for (int index = 0; index < text.length(); index++) {
@@ -314,10 +321,10 @@ class Font {
                 STBTruetype.stbtt_GetBakedQuad(char_data, bitmap_width, bitmap_height, (codepoint-32), 
                                                current_x, current_y, q, true);
 
-                float x0 = q.x0() * scale;
-                float y0 = (baseline + (baseline - q.y0())) * scale;
-                float x1 = q.x1() * scale;
-                float y1 = (baseline + (baseline - q.y1())) * scale;
+                float x0 = q.x0() * font_scale;
+                float y0 = (baseline + (baseline - q.y0())) * font_scale;
+                float x1 = q.x1() * font_scale;
+                float y1 = (baseline + (baseline - q.y1())) * font_scale;
 
                 float u0 = q.s0();
                 float v0 = q.t0();

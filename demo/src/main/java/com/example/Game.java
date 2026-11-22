@@ -26,6 +26,8 @@ public class Game {
     Material default_material;
     Material goal_material;
 
+    float camera_rotation[];
+
     float player[];
     float player_orientation[];
     float ball_radius;
@@ -33,7 +35,7 @@ public class Game {
     public Game() throws Exception {
         window = new Window(640, 480, "Balls");
         r = new Renderer();
-        font = new Font("C:/windows/fonts/arial.ttf", 32);
+        font = new Font("C:/windows/fonts/arial.ttf", 128);
 
         tex_container  = r.CreateTexture("assets/textures/container.jpg", true, true);
         tex_container2 = r.CreateTexture("assets/textures/container2.png", true, true);
@@ -61,6 +63,8 @@ public class Game {
         player = new float[]{0, 0, 0};
         player_orientation = new float[]{0, 0, 0, 1};
         ball_radius = 0.28f;
+
+        camera_rotation = new float[]{0, 0};
 
         shadow_matrix = new float[16];
     }
@@ -109,12 +113,12 @@ public class Game {
             if (shadow_pass) {
                 glEnable(GL_TEXTURE_2D);
                 glTranslatef(player[0], player[1]+1, player[2]);
-                font.DrawText3D("Player", 0.02f, red,g,b,a);
+                font.DrawText3D("Player", 0.52f, red,g,b,a);
                 glDisable(GL_TEXTURE_2D);
             } else {
                 glDisable(GL_LIGHTING);
                 glTranslatef(player[0], player[1]+1, player[2]);
-                font.DrawText3D("Player", 0.02f, red,g,b,a);
+                font.DrawText3D("Player", 0.52f, red,g,b,a);
                 glEnable(GL_LIGHTING);
             }
             glDisable(GL_BLEND);
@@ -203,7 +207,6 @@ public class Game {
 
         float camera[] = {0, 0, 0};
         float camera_radius = 7.0f;
-        float camera_rotation[] = {0, 0};
         float camera_forward[] = {0, 0, 0};
         float camera_right[] = {0, 0, 0};
 
@@ -476,7 +479,7 @@ public class Game {
                 glEnable(GL_BLEND);
                 glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
                 glTranslatef(light0.GetPositionX(), light0.GetPositionY(), light0.GetPositionZ());
-                font.DrawText3D("Light0", 0.15f, 1,1,1,1);
+                font.DrawText3D("Light0", 2.15f, 1,1,1,1);
                 glPopMatrix();
             }
 
@@ -493,7 +496,7 @@ public class Game {
             glMatrixMode(GL_MODELVIEW);
             glLoadIdentity();
 
-            font.DrawTextScaled2D("Hello friend", 0, 0, 2, 1,1,1,1);
+            font.DrawTextScaled2D("Frame Time:"+(int)(dt*1000)+"ms", 0, 0, 32, 1,1,0,1);
 
             glEnable(GL_DEPTH_TEST);
 
