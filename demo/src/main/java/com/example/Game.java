@@ -2,8 +2,38 @@ package com.example;
 
 import static org.lwjgl.opengl.GL11.*;
 import java.io.File;
+import java.util.Random;
+
 import org.lwjgl.glfw.GLFW;
 import static com.example.MathHelper.*;
+
+class Particle {
+    public float start_position[];
+    public float position[];
+    public float movement[];
+    public float color[];
+    public float direction;
+    public float acceleration;
+    public float deceleration;
+    public float scale;
+
+    public Particle(float x, float y, float z, float mx, float my, float mz) {
+        start_position = new float[]{x, y, z};
+        position = new float[]{x, y, z};
+        movement = new float[]{mx, my, mz};
+        color    = new float[]{1,1,1,1};
+        acceleration = 0;
+        deceleration = 0;
+        scale = 1;
+    }
+
+    public void SetColor(float r, float g, float b, float a) {
+        color[0] = r;
+        color[1] = g;
+        color[2] = b;
+        color[3] = a;
+    }
+}
 
 public class Game {
     private Window window;
@@ -18,6 +48,7 @@ public class Game {
     private int tex_container2;
     private int tex_earth;
     private int tex_grass;
+    private int tex_particle;
     private int texture_ids[];
 
     float goal[];
@@ -35,6 +66,10 @@ public class Game {
     float player_orientation[];
     float ball_radius;
 
+    Random rand;
+    int particle_count;
+    Particle particles[];
+
     public Game() throws Exception {
         window = new Window(640, 480, "Balls");
         r = new Renderer();
@@ -44,12 +79,14 @@ public class Game {
         tex_container2 = r.CreateTexture("assets/textures/container2.png", true, true);
         tex_earth      = r.CreateTexture("assets/textures/earth.png", true, true);
         tex_grass      = r.CreateTexture("assets/textures/texGrass.png", true, true);
+        tex_particle   = r.CreateTexture("assets/textures/particle.png", true, true);
 
         texture_ids = new int[]{
             tex_container,
             tex_container2,
             tex_earth,
             tex_grass,
+            tex_particle,
         };
 
         goal = new float[]{0, 0, 0};
@@ -73,6 +110,19 @@ public class Game {
         camera_up        = new float[]{0, 0, 0};
 
         shadow_matrix = new float[16];
+
+        rand = new Random();
+
+        particle_count = 128;
+        particles = new Particle[particle_count];
+        for (int index = 0; index < particle_count; index++) {
+            float mx = (rand.nextInt(10) - 5) * 0.01f;
+            float mz = (rand.nextInt(10) - 5) * 0.01f;
+            particles[index] = new Particle(0,-5,0,  mx, 0, mz);
+            particles[index].scale = 0.25f;
+            particles[index].acceleration = (rand.nextInt(5) + 5) * 0.02f;
+            particles[index].deceleration = 0.0025f;
+        }
     }
 
     private void DrawBillboardQuad(float x, float y, float z, float width, float height, 
@@ -461,6 +511,31 @@ public class Game {
                 }
             }
 
+            // Update particles.
+            for (int index = 0; index < particle_count; index++) {
+                Particle p = particles[index];
+
+                // Update position.
+                p.position[0] += p.movement[0];
+                p.position[1] += p.acceleration - p.deceleration;
+                p.position[2] += p.movement[2];
+
+                // Increase deceleration for downward motion.
+                p.deceleration += 0.0025f;
+
+                // Update direction.
+                p.direction += rand.nextInt(5) * 0.01f;
+
+                // Reset particle if it falls below starting position.
+                if (p.position[1] < p.start_position[1]) {
+                    p.position[0] = p.start_position[0];
+                    p.position[1] = p.start_position[1];
+                    p.position[2] = p.start_position[2];
+                    p.acceleration = (rand.nextInt(5) + 5) * 0.02f;
+                    p.deceleration = 0.0025f;
+                }
+            }
+
             // Render.
             glViewport(0, 0, render_target_width, render_target_height);
             glClearColor(background_color[0], background_color[1], background_color[2], background_color[3]);
@@ -522,8 +597,6 @@ public class Game {
             default_material.Update();
             DrawScene(1, 1, 1, 1, false);
 
-            DrawBillboardQuad(10, 0, 10, 4, 4,  1,1,1,1);
-
             // Draw debug light source.
             {
                 glDisable(GL_LIGHTING);
@@ -537,6 +610,34 @@ public class Game {
                 font.DrawText3D("Light0", 2.15f, 1,1,1,1);
                 glPopMatrix();
             }
+
+            // Draw Particles.
+            // glDisable(GL_DEPTH_TEST);
+            glDepthMask(false);
+            glEnable(GL_BLEND);
+            glBlendFunc(GL_ONE, GL_ONE);
+            glBindTexture(GL_TEXTURE_2D, tex_particle);
+            for (int index = 0; index < particle_count; index++) {
+                Particle p = particles[index];
+                glPushMatrix();
+                
+                glTranslatef(p.position[0], p.position[1], p.position[2]);
+                glRotatef(p.direction, 0, 0, 1);
+                glScalef(p.scale, p.scale, p.scale);
+                
+                glBegin(GL_TRIANGLES);
+                glTexCoord2f(0,0);  glVertex3f(-1,-1,0);
+                glTexCoord2f(1,0);  glVertex3f(1,-1,0);
+                glTexCoord2f(1,1);  glVertex3f(1,1,0);
+                
+                glTexCoord2f(0,0);  glVertex3f(-1,-1,0);
+                glTexCoord2f(1,1);  glVertex3f(1,1,0);
+                glTexCoord2f(0,1);  glVertex3f(-1,1,0);
+                glEnd();
+                
+                glPopMatrix();
+            }
+            glDepthMask(true);
 
 
             // Orthographic Projection.
