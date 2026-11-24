@@ -47,7 +47,6 @@ class ParticleEmitter {
     private Particle particles[];
     private Random rand;
     private int next_particle_index;
-    private boolean reset_particles_after_death;
 
     public ParticleEmitter(int count, Random rand) {
         particle_count = count;
@@ -70,34 +69,10 @@ class ParticleEmitter {
         this(128, null);
     }
 
-    private void ResetParticle(Particle p) {
-        p.position[0] = p.start_position[0];
-        p.position[1] = p.start_position[1];
-        p.position[2] = p.start_position[2];
-
-        p.velocity[0] = (rand.nextFloat() * 2 - 1) * 1.5f;
-        p.velocity[1] = 3 + rand.nextFloat() * 3;
-        p.velocity[2] = (rand.nextFloat() * 2 - 1) * 1.5f;
-
-        p.angle = rand.nextFloat() * 360;
-        p.angular_velocity = (rand.nextFloat() * 2 - 1) * 120;
-        p.life = 0;
-        p.max_life = rand.nextFloat() + 1;
-        p.active = false;
-    }
-
-    public void Init() {
-        reset_particles_after_death = true;
-        for (int index = 0; index < particle_count; index++) {
-            ResetParticle(particles[index]);
-        }
-    }
-
     public void SpawnBurst(float x, float y, float z, int spawn_count,
                            float speed, float min_velocity, float max_velocity, 
                            float scale, 
                            float r, float g, float b) {
-        reset_particles_after_death = false;
         for (int index = 0; index < spawn_count; index++) {
             Particle p = particles[next_particle_index];
             next_particle_index = (next_particle_index + 1) % particle_count;
@@ -128,14 +103,8 @@ class ParticleEmitter {
         float GRAVITY = -9.8f;
         for (int index = 0; index < particle_count; index++) {
             Particle p = particles[index];
-            if (p.active == false) {
-                if (reset_particles_after_death) {
-                    ResetParticle(p);
-                } else {
-                    // Skip inactive particles.
-                    continue;
-                }
-            }
+            // Skip inactive particles.
+            if (p.active == false) continue;
 
             // Update position.
             p.velocity[1] += GRAVITY * dt;
@@ -265,53 +234,6 @@ public class Game {
         shadow_matrix = new float[16];
 
         emitter = new ParticleEmitter();
-    }
-
-    private void DrawBillboardQuad(float x, float y, float z, float width, float height, 
-                                   float red, float green, float blue, float alpha) {
-        float half_width  = width  * 0.5f;
-        float half_height = height * 0.5f;
-        
-        glColor4f(red, green, blue, alpha);
-        glBegin(GL_TRIANGLES);
-        glTexCoord2f(0,0);
-        glVertex3f(
-            x - camera_right[0] * half_width - camera_up[0] * half_height,
-            y - camera_right[1] * half_width - camera_up[1] * half_height,
-            z - camera_right[2] * half_width - camera_up[2] * half_height
-        );
-        glTexCoord2f(1,0);
-        glVertex3f(
-            x + camera_right[0] * half_width - camera_up[0] * half_height,
-            y + camera_right[1] * half_width - camera_up[1] * half_height,
-            z + camera_right[2] * half_width - camera_up[2] * half_height
-        );
-        glTexCoord2f(1,1);
-        glVertex3f(
-            x + camera_right[0] * half_width + camera_up[0] * half_height,
-            y + camera_right[1] * half_width + camera_up[1] * half_height,
-            z + camera_right[2] * half_width + camera_up[2] * half_height
-        );
-
-        glTexCoord2f(0,0);
-        glVertex3f(
-            x - camera_right[0] * half_width - camera_up[0] * half_height,
-            y - camera_right[1] * half_width - camera_up[1] * half_height,
-            z - camera_right[2] * half_width - camera_up[2] * half_height
-        );
-        glTexCoord2f(1,1);
-        glVertex3f(
-            x + camera_right[0] * half_width + camera_up[0] * half_height,
-            y + camera_right[1] * half_width + camera_up[1] * half_height,
-            z + camera_right[2] * half_width + camera_up[2] * half_height
-        );
-        glTexCoord2f(0,1);
-        glVertex3f(
-            x - camera_right[0] * half_width + camera_up[0] * half_height,
-            y - camera_right[1] * half_width + camera_up[1] * half_height,
-            z - camera_right[2] * half_width + camera_up[2] * half_height
-        );
-        glEnd();
     }
 
     private void DrawScene(float red, float g, float b, float a, boolean shadow_pass) {
@@ -636,7 +558,7 @@ public class Game {
             if ((DistanceSquared(player, goal) < 0.5f) && !current_goal_reached) {
                 current_goal_reached = true;
                 goal_time_wait = 1.0f;
-                emitter.SpawnBurst(goal[0], goal[1], goal[2], 48, 3.5f, 2.5f, 6.5f, 0.3f, 1.0f,0.35f,0.2f);
+                emitter.SpawnBurst(goal[0], goal[1]+0.5f, goal[2], 48, 3.5f, 2.5f, 6.5f, 0.3f, 1.0f,0.35f,0.2f);
             }
 
             if (current_goal_reached) {
