@@ -10,21 +10,22 @@ import static com.example.MathHelper.*;
 class Particle {
     public float start_position[];
     public float position[];
-    public float movement[];
+    public float velocity[];
     public float color[];
-    public float direction;
-    public float acceleration;
-    public float deceleration;
+    public float angle;
+    public float angular_velocity;
     public float scale;
+    public float life;
+    public float max_life;
 
     public Particle(float x, float y, float z, float mx, float my, float mz) {
         start_position = new float[]{x, y, z};
         position = new float[]{x, y, z};
-        movement = new float[]{mx, my, mz};
+        velocity = new float[]{mx, my, mz};
         color    = new float[]{1,1,1,1};
-        acceleration = 0;
-        deceleration = 0;
-        scale = 1;
+        scale    = 0.25f;
+        life     = 0;
+        max_life = 1.5f;
     }
 
     public void SetColor(float r, float g, float b, float a) {
@@ -116,13 +117,24 @@ public class Game {
         particle_count = 128;
         particles = new Particle[particle_count];
         for (int index = 0; index < particle_count; index++) {
-            float mx = (rand.nextInt(10) - 5) * 0.01f;
-            float mz = (rand.nextInt(10) - 5) * 0.01f;
-            particles[index] = new Particle(0,-5,0,  mx, 0, mz);
-            particles[index].scale = 0.25f;
-            particles[index].acceleration = (rand.nextInt(5) + 5) * 0.02f;
-            particles[index].deceleration = 0.0025f;
+            particles[index] = new Particle(0,0,0,  0, 0, 0);
+            ResetParticle(particles[index]);
         }
+    }
+
+    private void ResetParticle(Particle p) {
+        p.position[0] = p.start_position[0];
+        p.position[1] = p.start_position[1];
+        p.position[2] = p.start_position[2];
+
+        p.velocity[0] = (rand.nextFloat() * 2 - 1) * 1.5f;
+        p.velocity[1] = 3 + rand.nextFloat() * 3;
+        p.velocity[2] = (rand.nextFloat() * 2 - 1) * 1.5f;
+
+        p.angle = rand.nextFloat() * 360;
+        p.angular_velocity = (rand.nextFloat() * 2 - 1) * 120;
+        p.life = 0;
+        p.max_life = rand.nextFloat() + 1;
     }
 
     private void DrawBillboardQuad(float x, float y, float z, float width, float height, 
@@ -512,28 +524,21 @@ public class Game {
             }
 
             // Update particles.
+            float GRAVITY = -9.8f;
             for (int index = 0; index < particle_count; index++) {
                 Particle p = particles[index];
+                p.life += dt;
+                if (p.life > p.max_life) {
+                    ResetParticle(p);
+                }
 
                 // Update position.
-                p.position[0] += p.movement[0];
-                p.position[1] += p.acceleration - p.deceleration;
-                p.position[2] += p.movement[2];
+                p.velocity[1] += GRAVITY * dt;
+                p.position[0] += p.velocity[0] * dt;
+                p.position[1] += p.velocity[1] * dt;
+                p.position[2] += p.velocity[2] * dt;
 
-                // Increase deceleration for downward motion.
-                p.deceleration += 0.0025f;
-
-                // Update direction.
-                p.direction += rand.nextInt(5) * 0.01f;
-
-                // Reset particle if it falls below starting position.
-                if (p.position[1] < p.start_position[1]) {
-                    p.position[0] = p.start_position[0];
-                    p.position[1] = p.start_position[1];
-                    p.position[2] = p.start_position[2];
-                    p.acceleration = (rand.nextInt(5) + 5) * 0.02f;
-                    p.deceleration = 0.0025f;
-                }
+                p.angle += p.angular_velocity * dt;
             }
 
             // Render.
@@ -622,18 +627,24 @@ public class Game {
                 glPushMatrix();
                 
                 glTranslatef(p.position[0], p.position[1], p.position[2]);
-                glRotatef(p.direction, 0, 0, 1);
+                glRotatef(p.angle, 0, 0, 1);
                 glScalef(p.scale, p.scale, p.scale);
                 
-                glBegin(GL_TRIANGLES);
-                glTexCoord2f(0,0);  glVertex3f(-1,-1,0);
-                glTexCoord2f(1,0);  glVertex3f(1,-1,0);
-                glTexCoord2f(1,1);  glVertex3f(1,1,0);
-                
-                glTexCoord2f(0,0);  glVertex3f(-1,-1,0);
-                glTexCoord2f(1,1);  glVertex3f(1,1,0);
-                glTexCoord2f(0,1);  glVertex3f(-1,1,0);
-                glEnd();
+                float fade = 1 - Math.min(1, p.life / p.max_life);
+                if (false) {
+                    glColor4f(p.color[0]*fade,p.color[1]*fade,p.color[2]*fade,p.color[3]*fade);
+                    glBegin(GL_TRIANGLES);
+                    glTexCoord2f(0,0);  glVertex3f(-1,-1,0);
+                    glTexCoord2f(1,0);  glVertex3f(1,-1,0);
+                    glTexCoord2f(1,1);  glVertex3f(1,1,0);
+                    
+                    glTexCoord2f(0,0);  glVertex3f(-1,-1,0);
+                    glTexCoord2f(1,1);  glVertex3f(1,1,0);
+                    glTexCoord2f(0,1);  glVertex3f(-1,1,0);
+                    glEnd();
+                } else {
+                    DrawBillboardQuad(0,0,0, 1, 1, p.color[0]*fade,p.color[1]*fade,p.color[2]*fade,p.color[3]*fade);
+                }
                 
                 glPopMatrix();
             }
