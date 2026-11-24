@@ -36,6 +36,119 @@ class Particle {
     }
 }
 
+class ParticleEmitter {
+    private float position[];
+    private int particle_count;
+    private Particle particles[];
+    private Random rand;
+    private boolean active;
+
+    public ParticleEmitter(float x, float y, float z, int count, Random rand) {
+        position = new float[]{x, y, z};
+        particle_count = count;
+        particles = new Particle[particle_count];
+        for (int index = 0; index < particle_count; index++) {
+            particles[index] = new Particle(position[0],position[1],position[2],  0,0,0);
+        }
+        if (rand != null) {
+            this.rand = rand;
+        } else {
+            this.rand = new Random();
+        }
+        active = true;
+    }
+
+    public ParticleEmitter(float x, float y, float z, int count) {
+        this(x, y, z, count, null);
+    }
+
+    public ParticleEmitter(float x, float y, float z) {
+        this(x, y, z, 128, null);
+    }
+
+    public ParticleEmitter() {
+        this(0, 0, 0, 128, null);
+    }
+
+    public boolean IsActive() { return active; }
+    public void SetActive(boolean enable) { active = enable; }
+
+    private void ResetParticle(Particle p) {
+        p.position[0] = p.start_position[0];
+        p.position[1] = p.start_position[1];
+        p.position[2] = p.start_position[2];
+
+        p.velocity[0] = (rand.nextFloat() * 2 - 1) * 1.5f;
+        p.velocity[1] = 3 + rand.nextFloat() * 3;
+        p.velocity[2] = (rand.nextFloat() * 2 - 1) * 1.5f;
+
+        p.angle = rand.nextFloat() * 360;
+        p.angular_velocity = (rand.nextFloat() * 2 - 1) * 120;
+        p.life = 0;
+        p.max_life = rand.nextFloat() + 1;
+    }
+
+    public void Init() {
+        for (int index = 0; index < particle_count; index++) {
+            ResetParticle(particles[index]);
+        }
+    }
+
+    public void Update(float dt) {
+        float GRAVITY = -9.8f;
+        for (int index = 0; index < particle_count; index++) {
+            Particle p = particles[index];
+            p.life += dt;
+            if (p.life > p.max_life) {
+                ResetParticle(p);
+            }
+
+            // Update position.
+            p.velocity[1] += GRAVITY * dt;
+            p.position[0] += p.velocity[0] * dt;
+            p.position[1] += p.velocity[1] * dt;
+            p.position[2] += p.velocity[2] * dt;
+
+            p.angle += p.angular_velocity * dt;
+        }
+    }
+
+    public void Draw(float camera_rotation[], int tex_particle) {
+        // glDisable(GL_DEPTH_TEST);
+        glDepthMask(false);
+        glEnable(GL_BLEND);
+        glBlendFunc(GL_ONE, GL_ONE);
+        glBindTexture(GL_TEXTURE_2D, tex_particle);
+        for (int index = 0; index < particle_count; index++) {
+            Particle p = particles[index];
+            float fade = 1 - Math.min(1, p.life / p.max_life);
+            float half = p.scale * 0.5f;
+            
+            glPushMatrix();
+            {
+                glTranslatef(p.position[0], p.position[1], p.position[2]);
+                glRotatef(camera_rotation[1], 0,1,0);
+                glRotatef(camera_rotation[0], 1,0,0);
+                glRotatef(p.angle, 0,0,1);
+
+                glColor4f(p.color[0]*fade,p.color[1]*fade,p.color[2]*fade,p.color[3]*fade);
+                glBegin(GL_TRIANGLES);
+                glTexCoord2f(0,0);  glVertex3f(-half,-half,0);
+                glTexCoord2f(1,0);  glVertex3f( half,-half,0);
+                glTexCoord2f(1,1);  glVertex3f( half, half,0);
+                
+                glTexCoord2f(0,0);  glVertex3f(-half,-half,0);
+                glTexCoord2f(1,1);  glVertex3f( half,half,0);
+                glTexCoord2f(0,1);  glVertex3f(-half,half,0);
+                glEnd();
+            }
+            glPopMatrix();
+        }
+        glDisable(GL_BLEND);
+        glDepthMask(true);
+    }
+}
+
 public class Game {
     private Window window;
     private Renderer r;
@@ -67,9 +180,7 @@ public class Game {
     float player_orientation[];
     float ball_radius;
 
-    Random rand;
-    int particle_count;
-    Particle particles[];
+    ParticleEmitter emitter;
 
     public Game() throws Exception {
         window = new Window(640, 480, "Balls");
@@ -112,29 +223,8 @@ public class Game {
 
         shadow_matrix = new float[16];
 
-        rand = new Random();
-
-        particle_count = 128;
-        particles = new Particle[particle_count];
-        for (int index = 0; index < particle_count; index++) {
-            particles[index] = new Particle(0,0,0,  0, 0, 0);
-            ResetParticle(particles[index]);
-        }
-    }
-
-    private void ResetParticle(Particle p) {
-        p.position[0] = p.start_position[0];
-        p.position[1] = p.start_position[1];
-        p.position[2] = p.start_position[2];
-
-        p.velocity[0] = (rand.nextFloat() * 2 - 1) * 1.5f;
-        p.velocity[1] = 3 + rand.nextFloat() * 3;
-        p.velocity[2] = (rand.nextFloat() * 2 - 1) * 1.5f;
-
-        p.angle = rand.nextFloat() * 360;
-        p.angular_velocity = (rand.nextFloat() * 2 - 1) * 120;
-        p.life = 0;
-        p.max_life = rand.nextFloat() + 1;
+        emitter = new ParticleEmitter();
+        emitter.Init();
     }
 
     private void DrawBillboardQuad(float x, float y, float z, float width, float height, 
@@ -524,22 +614,7 @@ public class Game {
             }
 
             // Update particles.
-            float GRAVITY = -9.8f;
-            for (int index = 0; index < particle_count; index++) {
-                Particle p = particles[index];
-                p.life += dt;
-                if (p.life > p.max_life) {
-                    ResetParticle(p);
-                }
-
-                // Update position.
-                p.velocity[1] += GRAVITY * dt;
-                p.position[0] += p.velocity[0] * dt;
-                p.position[1] += p.velocity[1] * dt;
-                p.position[2] += p.velocity[2] * dt;
-
-                p.angle += p.angular_velocity * dt;
-            }
+            emitter.Update(dt);
 
             // Render.
             glViewport(0, 0, render_target_width, render_target_height);
@@ -617,38 +692,7 @@ public class Game {
             }
 
             // Draw Particles.
-            // glDisable(GL_DEPTH_TEST);
-            glDepthMask(false);
-            glEnable(GL_BLEND);
-            glBlendFunc(GL_ONE, GL_ONE);
-            glBindTexture(GL_TEXTURE_2D, tex_particle);
-            for (int index = 0; index < particle_count; index++) {
-                Particle p = particles[index];
-                float fade = 1 - Math.min(1, p.life / p.max_life);
-                float half = p.scale * 0.5f;
-                
-                glPushMatrix();
-                {
-                    glTranslatef(p.position[0], p.position[1], p.position[2]);
-                    glRotatef(camera_rotation[1], 0,1,0);
-                    glRotatef(camera_rotation[0], 1,0,0);
-                    glRotatef(p.angle, 0,0,1);
-
-                    glColor4f(p.color[0]*fade,p.color[1]*fade,p.color[2]*fade,p.color[3]*fade);
-                    glBegin(GL_TRIANGLES);
-                    glTexCoord2f(0,0);  glVertex3f(-half,-half,0);
-                    glTexCoord2f(1,0);  glVertex3f( half,-half,0);
-                    glTexCoord2f(1,1);  glVertex3f( half, half,0);
-                    
-                    glTexCoord2f(0,0);  glVertex3f(-half,-half,0);
-                    glTexCoord2f(1,1);  glVertex3f( half,half,0);
-                    glTexCoord2f(0,1);  glVertex3f(-half,half,0);
-                    glEnd();
-                }
-                glPopMatrix();
-            }
-            glDisable(GL_BLEND);
-            glDepthMask(true);
+            emitter.Draw(camera_rotation, tex_particle);
 
 
             // Orthographic Projection.
