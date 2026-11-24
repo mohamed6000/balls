@@ -463,6 +463,9 @@ public class Game {
         String[] level_files = levels_directory.list();
         int level_index = 0;
 
+        float goal_time_wait = 0;
+        boolean current_goal_reached = false;
+
         if (level_files.length == 0) {
             throw new Exception("No level was found");
         } 
@@ -630,32 +633,44 @@ public class Game {
                 QuaternionNormalizeOrIdentity(player_orientation);
             }
 
-            if (DistanceSquared(player, goal) < 0.5f) {
+            if ((DistanceSquared(player, goal) < 0.5f) && !current_goal_reached) {
+                current_goal_reached = true;
+                goal_time_wait = 1.0f;
+                emitter.SpawnBurst(goal[0], goal[1], goal[2], 48, 3.5f, 2.5f, 6.5f, 0.3f, 1.0f,0.35f,0.2f);
+            }
+
+            if (current_goal_reached) {
                 // Go to next level or game over.
-                if (level_index < (level_files.length-1)) {
-                    level_index++;
-                    level_path = level_directory_name + "/" + level_files[level_index];
-                    if (!level.LoadFromFile(level_path, texture_ids)) {
-                        throw new Exception("Failed to load level " + level_path);
+                if (goal_time_wait <= 0) {
+                    current_goal_reached = false;
+                    if (level_index < (level_files.length-1)) {
+                        level_index++;
+                        level_path = level_directory_name + "/" + level_files[level_index];
+                        if (!level.LoadFromFile(level_path, texture_ids)) {
+                            throw new Exception("Failed to load level " + level_path);
+                        }
+
+                        level_width  = level.getWidth();
+                        level_height = level.getHeight();
+                        level_data   = level.getMap();
+
+                        player[0] = level.GetPlayerStartX();
+                        player[2] = level.GetPlayerStartZ();
+                        player_velocity[0] = 0;
+                        player_velocity[1] = 0;
+                        player_velocity[2] = 0;
+                        player_orientation[0] = 0;
+                        player_orientation[1] = 0;
+                        player_orientation[2] = 0;
+                        player_orientation[3] = 1;
+                        goal[0]  = level.GetGoalX();
+                        goal[2]  = level.GetGoalZ();
+                    } else {
+                        System.out.println("GAME OVER!!!!!!!!");
                     }
-
-                    level_width  = level.getWidth();
-                    level_height = level.getHeight();
-                    level_data   = level.getMap();
-
-                    player[0] = level.GetPlayerStartX();
-                    player[2] = level.GetPlayerStartZ();
-                    player_velocity[0] = 0;
-                    player_velocity[1] = 0;
-                    player_velocity[2] = 0;
-                    player_orientation[0] = 0;
-                    player_orientation[1] = 0;
-                    player_orientation[2] = 0;
-                    player_orientation[3] = 1;
-                    goal[0]  = level.GetGoalX();
-                    goal[2]  = level.GetGoalZ();
                 } else {
-                    System.out.println("GAME OVER!!!!!!!!");
+                    goal_time_wait -= dt;
+                    if (goal_time_wait <= 0) goal_time_wait = 0;
                 }
             }
 
