@@ -17,6 +17,7 @@ class Particle {
     public float scale;
     public float life;
     public float max_life;
+    public boolean active;
 
     public Particle(float x, float y, float z, float mx, float my, float mz) {
         start_position = new float[]{x, y, z};
@@ -26,6 +27,11 @@ class Particle {
         scale    = 0.25f;
         life     = 0;
         max_life = 1.5f;
+        active = false;
+    }
+
+    public Particle() {
+        this(0,0,0, 0,0,0);
     }
 
     public void SetColor(float r, float g, float b, float a) {
@@ -37,41 +43,32 @@ class Particle {
 }
 
 class ParticleEmitter {
-    private float position[];
     private int particle_count;
     private Particle particles[];
     private Random rand;
-    private boolean active;
+    private int next_particle_index;
+    private boolean reset_particles_after_death;
 
-    public ParticleEmitter(float x, float y, float z, int count, Random rand) {
-        position = new float[]{x, y, z};
+    public ParticleEmitter(int count, Random rand) {
         particle_count = count;
         particles = new Particle[particle_count];
         for (int index = 0; index < particle_count; index++) {
-            particles[index] = new Particle(position[0],position[1],position[2],  0,0,0);
+            particles[index] = new Particle();
         }
         if (rand != null) {
             this.rand = rand;
         } else {
             this.rand = new Random();
         }
-        active = true;
     }
 
-    public ParticleEmitter(float x, float y, float z, int count) {
-        this(x, y, z, count, null);
-    }
-
-    public ParticleEmitter(float x, float y, float z) {
-        this(x, y, z, 128, null);
+    public ParticleEmitter(int count) {
+        this(count, null);
     }
 
     public ParticleEmitter() {
-        this(0, 0, 0, 128, null);
+        this(128, null);
     }
-
-    public boolean IsActive() { return active; }
-    public void SetActive(boolean enable) { active = enable; }
 
     private void ResetParticle(Particle p) {
         p.position[0] = p.start_position[0];
@@ -86,11 +83,44 @@ class ParticleEmitter {
         p.angular_velocity = (rand.nextFloat() * 2 - 1) * 120;
         p.life = 0;
         p.max_life = rand.nextFloat() + 1;
+        p.active = false;
     }
 
     public void Init() {
+        reset_particles_after_death = true;
         for (int index = 0; index < particle_count; index++) {
             ResetParticle(particles[index]);
+        }
+    }
+
+    public void SpawnBurst(float x, float y, float z, int spawn_count,
+                           float speed, float min_velocity, float max_velocity, 
+                           float scale, 
+                           float r, float g, float b) {
+        reset_particles_after_death = false;
+        for (int index = 0; index < spawn_count; index++) {
+            Particle p = particles[next_particle_index];
+            next_particle_index = (next_particle_index + 1) % particle_count;
+
+            p.start_position[0] = x;
+            p.start_position[1] = y;
+            p.start_position[2] = z;
+
+            p.position[0] = x;
+            p.position[1] = y;
+            p.position[2] = z;
+
+            p.velocity[0] = (rand.nextFloat() * 2 - 1) * speed;
+            p.velocity[1] = min_velocity + rand.nextFloat() * (max_velocity - min_velocity);
+            p.velocity[2] = (rand.nextFloat() * 2 - 1) * speed;
+
+            p.angle = rand.nextFloat() * 360;
+            p.angular_velocity = (rand.nextFloat() * 2 - 1) * 180;
+            p.scale = scale;
+            p.life  = 0;
+            p.max_life = 0.5f + rand.nextFloat() * 0.75f;
+            p.active = true;
+            p.SetColor(r, g, b, 1);
         }
     }
 
@@ -98,9 +128,13 @@ class ParticleEmitter {
         float GRAVITY = -9.8f;
         for (int index = 0; index < particle_count; index++) {
             Particle p = particles[index];
-            p.life += dt;
-            if (p.life > p.max_life) {
-                ResetParticle(p);
+            if (p.active == false) {
+                if (reset_particles_after_death) {
+                    ResetParticle(p);
+                } else {
+                    // Skip inactive particles.
+                    continue;
+                }
             }
 
             // Update position.
@@ -110,6 +144,11 @@ class ParticleEmitter {
             p.position[2] += p.velocity[2] * dt;
 
             p.angle += p.angular_velocity * dt;
+
+            p.life += dt;
+            if (p.life >= p.max_life) {
+                p.active = false;
+            }
         }
     }
 
@@ -121,6 +160,8 @@ class ParticleEmitter {
         glBindTexture(GL_TEXTURE_2D, tex_particle);
         for (int index = 0; index < particle_count; index++) {
             Particle p = particles[index];
+            if (!p.active) continue;
+
             float fade = 1 - Math.min(1, p.life / p.max_life);
             float half = p.scale * 0.5f;
             
@@ -224,7 +265,6 @@ public class Game {
         shadow_matrix = new float[16];
 
         emitter = new ParticleEmitter();
-        emitter.Init();
     }
 
     private void DrawBillboardQuad(float x, float y, float z, float width, float height, 
@@ -540,12 +580,18 @@ public class Game {
 
             player[0] += delta_px;
             if (CheckCollision(player[0], player[2], ball_radius, level)) {
+                if (Math.abs(player_velocity[0]) > 3.0f) {
+                    emitter.SpawnBurst(player[0], player[1]+ball_radius, player[2], 12, 2, 1, 3, 0.18f, 1,0.8f,0.2f);
+                }
                 player[0] -= delta_px;
                 player_velocity[0] = 0;
             }
 
             player[2] += delta_pz;
             if (CheckCollision(player[0], player[2], ball_radius, level)) {
+                if (Math.abs(player_velocity[2]) > 3.0f) {
+                    emitter.SpawnBurst(player[0], player[1]+ball_radius, player[2], 12, 2, 1, 3, 0.18f, 1,0.8f,0.2f);
+                }
                 player[2] -= delta_pz;
                 player_velocity[2] = 0;
             }
