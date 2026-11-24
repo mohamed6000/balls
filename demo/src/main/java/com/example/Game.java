@@ -624,30 +624,30 @@ public class Game {
             glBindTexture(GL_TEXTURE_2D, tex_particle);
             for (int index = 0; index < particle_count; index++) {
                 Particle p = particles[index];
-                glPushMatrix();
-                
-                glTranslatef(p.position[0], p.position[1], p.position[2]);
-                glRotatef(p.angle, 0, 0, 1);
-                glScalef(p.scale, p.scale, p.scale);
-                
                 float fade = 1 - Math.min(1, p.life / p.max_life);
-                if (false) {
+                float half = p.scale * 0.5f;
+                
+                glPushMatrix();
+                {
+                    glTranslatef(p.position[0], p.position[1], p.position[2]);
+                    glRotatef(camera_rotation[1], 0,1,0);
+                    glRotatef(camera_rotation[0], 1,0,0);
+                    glRotatef(p.angle, 0,0,1);
+
                     glColor4f(p.color[0]*fade,p.color[1]*fade,p.color[2]*fade,p.color[3]*fade);
                     glBegin(GL_TRIANGLES);
-                    glTexCoord2f(0,0);  glVertex3f(-1,-1,0);
-                    glTexCoord2f(1,0);  glVertex3f(1,-1,0);
-                    glTexCoord2f(1,1);  glVertex3f(1,1,0);
+                    glTexCoord2f(0,0);  glVertex3f(-half,-half,0);
+                    glTexCoord2f(1,0);  glVertex3f( half,-half,0);
+                    glTexCoord2f(1,1);  glVertex3f( half, half,0);
                     
-                    glTexCoord2f(0,0);  glVertex3f(-1,-1,0);
-                    glTexCoord2f(1,1);  glVertex3f(1,1,0);
-                    glTexCoord2f(0,1);  glVertex3f(-1,1,0);
+                    glTexCoord2f(0,0);  glVertex3f(-half,-half,0);
+                    glTexCoord2f(1,1);  glVertex3f( half,half,0);
+                    glTexCoord2f(0,1);  glVertex3f(-half,half,0);
                     glEnd();
-                } else {
-                    DrawBillboardQuad(0,0,0, 1, 1, p.color[0]*fade,p.color[1]*fade,p.color[2]*fade,p.color[3]*fade);
                 }
-                
                 glPopMatrix();
             }
+            glDisable(GL_BLEND);
             glDepthMask(true);
 
 
