@@ -47,6 +47,7 @@ class ParticleEmitter {
     private Particle particles[];
     private Random rand;
     private int next_particle_index;
+    private float trail_accumulator;
 
     public ParticleEmitter(int count, Random rand) {
         particle_count = count;
@@ -97,6 +98,62 @@ class ParticleEmitter {
             p.active = true;
             p.SetColor(r, g, b, 1);
         }
+    }
+
+    public void EmitTrail(float x, float y, float z, float vx, float vz, float radius, float dt, 
+                          float min_speed, float spawn_interval) {
+        float speed_squared = vx*vx + vz*vz;
+        if (speed_squared < (min_speed*min_speed)) {
+            trail_accumulator = 0;
+            return;
+        }
+
+        float speed = (float)Math.sqrt(speed_squared);
+        float rate_scale = Math.min(speed / 6.0f, 3.0f);
+        trail_accumulator += rate_scale * dt;
+        
+        float one_over_speed = 1.0f / speed;
+        float direction_x = vx * one_over_speed;
+        float direction_z = vz * one_over_speed;
+
+        int max_spawns_per_frame = 8;
+        int spawned_count = 0;
+
+        while ((trail_accumulator >= spawn_interval) && (spawned_count < max_spawns_per_frame)) {
+            trail_accumulator -= spawn_interval;
+            spawned_count++;
+
+            Particle p = particles[next_particle_index];
+            next_particle_index = (next_particle_index + 1) % particle_count;
+
+            float sx = x - direction_x * radius + (rand.nextFloat() * 2 - 1) * 0.08f;
+            float sy = y + 0.08f;
+            float sz = z - direction_z * radius + (rand.nextFloat() * 2 - 1) * 0.08f;
+
+            p.start_position[0] = p.position[0] = sx;
+            p.start_position[1] = p.position[1] = sy;
+            p.start_position[2] = p.position[2] = sz;
+
+            p.velocity[0] = -vx * 0.2f + (rand.nextFloat() * 2 - 1) * 4;
+            p.velocity[1] = 0.35f + rand.nextFloat() * 0.6f;
+            p.velocity[2] = -vz * 0.2f + (rand.nextFloat() * 2 - 1) * 4;
+
+            p.angle = rand.nextFloat() * 360;
+            p.angular_velocity = (rand.nextFloat() * 2 - 1) * 90;
+            p.scale = 0.16f;
+            p.life = 0;
+            p.max_life = 0.35f + rand.nextFloat() * 0.2f;
+            p.SetColor(0.85f, 0.9f, 1, 1);
+            p.active = true;
+        }
+
+        if (trail_accumulator > (spawn_interval * 2)) {
+            trail_accumulator = spawn_interval * 2;
+        }
+    }
+
+    public void EmitTrail(float x, float y, float z, float vx, float vz, float radius, float dt) {
+        EmitTrail(x, y, z, vx, vz, radius, dt, 2.5f, 0.025f);
     }
 
     public void Update(float dt) {
@@ -557,7 +614,7 @@ public class Game {
 
             if ((DistanceSquared(player, goal) < 0.5f) && !current_goal_reached) {
                 current_goal_reached = true;
-                goal_time_wait = 1.0f;
+                goal_time_wait = 0.75f;
                 emitter.SpawnBurst(goal[0], goal[1]+0.5f, goal[2], 48, 3.5f, 2.5f, 6.5f, 0.3f, 1.0f,0.35f,0.2f);
             }
 
@@ -594,6 +651,8 @@ public class Game {
                     goal_time_wait -= dt;
                     if (goal_time_wait <= 0) goal_time_wait = 0;
                 }
+            } else {
+                emitter.EmitTrail(player[0], player[1], player[2], player_velocity[0], player_velocity[2], ball_radius, dt);
             }
 
             // Update particles.
