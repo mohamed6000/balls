@@ -482,6 +482,10 @@ public class Game {
         glFogf(GL_FOG_DENSITY, fog_density);
         glHint(GL_FOG_HINT, GL_NICEST);
 
+        double fps_timer = 0;
+        int fps_frame_count = 0;
+        int current_fps = 0;
+
         window.PointerLockAndHide(true);
         double last_frame_time = GLFW.glfwGetTime();
         // Loop.
@@ -489,6 +493,15 @@ public class Game {
             double current_time = GLFW.glfwGetTime();
             float dt = (float)(current_time - last_frame_time);
             last_frame_time = current_time;
+            
+            fps_timer += dt;
+            fps_frame_count++;
+            if (fps_timer >= 0.5) {
+                current_fps = (int)Math.round(fps_frame_count / fps_timer);
+                fps_timer = 0.0;
+                fps_frame_count = 0;
+            }
+            if (dt > 0.15f) dt = 0.15f;
 
             int render_target_width  = window.getWidth();
             int render_target_height = window.getHeight();
@@ -750,6 +763,7 @@ public class Game {
             glLoadIdentity();
 
             font.DrawTextScaled2D("Frame Time:"+(int)(dt*1000)+"ms", 0, 0, 32, 1,1,0,1);
+            font.DrawTextScaled2D("FPS:" + current_fps, 0, 128, 32, 1,1,0,1);
 
             glEnable(GL_DEPTH_TEST);
 
