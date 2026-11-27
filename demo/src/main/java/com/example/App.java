@@ -11,6 +11,7 @@ import java.time.Duration;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class App 
 {
@@ -56,6 +57,7 @@ public class App
             }
 
             String end_point = project_url + "/rest/v1/live_data?select=id,created_at,temp,humidity&order=id.asc";
+            long poll_interval_ms = 2000;
 
             HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(10)).build();
 
@@ -66,12 +68,39 @@ public class App
                                     .GET()
                                     .build();
 
-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+            AtomicReference<String> latest_data = new AtomicReference<>("[]");
 
-            System.out.println("HTTP status: " + response.statusCode());
-            System.out.println("Body: " + response.body());
+            Thread fetcher_thread = new Thread(() -> {
+                while (true) {
+                    try {
+                        HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+                        if (response.statusCode() == 200) {
+                            latest_data.set(response.body());
+                        } else {
+                            System.out.println("HTTP " + response.statusCode() + ": " + response.body());
+                        }
+                    } catch (Exception e) {
+                        System.out.println("Failed to fetch data: " + e.getMessage());
+                    }
 
-            new Game().Run();
+                    try {
+                        Thread.sleep(poll_interval_ms);
+                    } catch (InterruptedException e) {
+                        return;
+                    }
+                }
+            });
+            fetcher_thread.setDaemon(true); // Do not prevent the JVM from exiting when main program finishes.
+            fetcher_thread.start(); // Start fetching in the background.
+
+            while (true) {
+                String current_data = latest_data.get();
+
+                System.out.println("[FRAME DATA] " + current_data);
+                Thread.sleep(500);
+            }
+
+            // new Game().Run();
         } catch (Exception e) {
             System.out.println(e.getMessage());
         }
