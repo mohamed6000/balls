@@ -8,10 +8,13 @@ import java.net.http.HttpResponse;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class App 
 {
@@ -45,6 +48,43 @@ public class App
         return env;
     }
 
+    public static final class LiveDataRow {
+        public final long id;
+        public final double temp;
+        public final double humidity;
+
+        public LiveDataRow(long id, double temp, double humidity) {
+            this.id       = id;
+            this.temp     = temp;
+            this.humidity = humidity;
+        }
+    }
+
+    private static final Pattern OBJECT_PATTERN = Pattern.compile("\\{[^{}]*\\}");
+    private static final Pattern ID_PATTERN = Pattern.compile("\"id\"\\s*:\\s*(-?\\d+)");
+    private static final Pattern TEMP_PATTERN = Pattern.compile("\"temp\"\\s*:\\s*(-?\\d+(?:\\.\\d+)?)");
+    private static final Pattern HUMIDITY_PATTERN = Pattern.compile("\"humidity\"\\s*:\\s*(-?\\d+(?:\\.\\d+)?)");
+
+    private static List<LiveDataRow> ParseLiveDataRows(String json) {
+        List<LiveDataRow> rows = new ArrayList<>();
+        Matcher object_matcher = OBJECT_PATTERN.matcher(json);
+
+        while (object_matcher.find()) {
+            String obj = object_matcher.group();
+            Matcher id_matcher = ID_PATTERN.matcher(obj);
+            Matcher temp_matcher = TEMP_PATTERN.matcher(obj);
+            Matcher humidity_matcher = HUMIDITY_PATTERN.matcher(obj);
+
+            if (id_matcher.find() && temp_matcher.find() && humidity_matcher.find()) {
+                long id = Long.parseLong(id_matcher.group(1));
+                double temp = Double.parseDouble(temp_matcher.group(1));
+                double humidity = Double.parseDouble(humidity_matcher.group(1));
+                rows.add(new LiveDataRow(id, temp, humidity));
+            }
+        }
+        return rows;
+    }
+
     public static void main( String[] args )
     {
         try {
@@ -68,14 +108,14 @@ public class App
                                     .GET()
                                     .build();
 
-            AtomicReference<String> latest_data = new AtomicReference<>("[]");
+            AtomicReference<List<LiveDataRow>> latest_data = new AtomicReference<>(List.of());
 
             Thread fetcher_thread = new Thread(() -> {
                 while (true) {
                     try {
                         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
                         if (response.statusCode() == 200) {
-                            latest_data.set(response.body());
+                            latest_data.set(ParseLiveDataRows(response.body()));
                         } else {
                             System.out.println("HTTP " + response.statusCode() + ": " + response.body());
                         }
@@ -94,9 +134,14 @@ public class App
             fetcher_thread.start(); // Start fetching in the background.
 
             while (true) {
-                String current_data = latest_data.get();
+                List<LiveDataRow> current_data = latest_data.get();
 
-                System.out.println("[FRAME DATA] " + current_data);
+                for (LiveDataRow row : current_data) {
+                    float x = (float)row.id;
+                    float y = (float)row.temp;
+                    float z = (float)row.humidity;
+                    System.out.printf("[FRAME] id=%d x=%.1f y(temp)=%.1f z(humidity)=%.1f%n", row.id, x, y, z);
+                }
                 Thread.sleep(500);
             }
 
